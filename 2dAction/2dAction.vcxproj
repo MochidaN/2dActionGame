@@ -167,6 +167,28 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\player\down.png" />
+    <Image Include="..\player\faint.png" />
+    <Image Include="..\player\fainting.png" />
+    <Image Include="..\player\fall.png" />
+    <Image Include="..\player\guard.png" />
+    <Image Include="..\player\hit.png" />
+    <Image Include="..\player\hit_air.png" />
+    <Image Include="..\player\jump.png" />
+    <Image Include="..\player\landing.png" />
+    <Image Include="..\player\lose.png" />
+    <Image Include="..\player\parry.png" />
+    <Image Include="..\player\side_attack.png" />
+    <Image Include="..\player\stand.png" />
+    <Image Include="..\player\step.png" />
+    <Image Include="..\player\vertical_attack.png" />
+    <Image Include="..\player\walk.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\txt\player\ImgPath.txt" />
+    <Text Include="..\txt\player\ImgPath_debug.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\sdl2.nuget.redist.2.0.10\build\native\sdl2.nuget.redist.targets" Condition="Exists('..\packages\sdl2.nuget.redist.2.0.10\build\native\sdl2.nuget.redist.targets')" />

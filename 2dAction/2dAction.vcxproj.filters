@@ -48,4 +48,58 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\player\down.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\faint.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\fainting.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\fall.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\guard.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\hit.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\hit_air.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\jump.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\landing.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\lose.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\parry.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\side_attack.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\stand.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\step.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\vertical_attack.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\player\walk.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\txt\player\ImgPath.txt" />
+    <Text Include="..\txt\player\ImgPath_debug.txt" />
+  </ItemGroup>
 </Project>

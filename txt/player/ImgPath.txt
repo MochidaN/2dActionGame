@@ -1,0 +1,16 @@
+../../image/player/stand.png
+../../image/player/walk.png
+../../image/player/step.png
+../../image/player/hit.png
+../../image/player/hit_air.png
+../../image/player/jump.png
+../../image/player/fall.png
+../../image/player/landing.png
+../../image/player/faint.png
+../../image/player/fainting.png
+../../image/player/down.png
+../../image/player/dead.png
+../../image/player/guard.png
+../../image/player/parry.png
+../../image/player/side_attack.png
+../../image/player/vertical_attack.png
