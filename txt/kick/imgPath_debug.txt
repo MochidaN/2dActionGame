@@ -1,0 +1,8 @@
+../image/kick/stand.png
+../image/kick/walk.png
+../image/kick/hit.png
+../image/kick/down.png
+../image/kick/dead.png
+../image/kick/ramming.png
+../image/kick/spin_kick_front.png
+../image/kick/spin_kick_back.png

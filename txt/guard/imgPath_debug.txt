@@ -1,0 +1,6 @@
+../image/guard/walk.png
+../image/guard/hit.png
+../image/guard/down.png
+../image/guard/dead.png
+../image/guard/guard.png
+../image/guard/punch.png

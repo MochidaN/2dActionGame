@@ -1,0 +1,6 @@
+../../image/warp/stand.png
+../../image/warp/hit.png
+../../image/warp/down.png
+../../image/warp/dead.png
+../../image/warp/dive.png
+../../image/warp/jump_out.png

@@ -1,0 +1,14 @@
+../image/boss/stand.png
+../image/boss/walk.png
+../image/boss/hit.png
+../image/boss/down.png
+../image/boss/dead.png
+../image/boss/guard.png
+../image/boss/punch.png
+../image/boss/dive.png
+../image/boss/jump_out.png
+../image/boss/ramming.png
+../image/boss/spin_kick_front.png
+../image/boss/spin_kick_back.png
+../image/boss/h_punch.png
+../image/boss/punch_combo.png

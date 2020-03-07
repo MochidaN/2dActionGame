@@ -97,9 +97,118 @@
     <Image Include="..\player\walk.png">
       <Filter>リソース ファイル</Filter>
     </Image>
+    <Image Include="..\image\boss\dead.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\dive.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\down.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\guard.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\h_punch.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\hit.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\jump_out.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\punch.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\punch_combo.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\ramming.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\spin_kick_back.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\spin_kick_front.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\stand.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\boss\walk.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\guard\dead.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\guard\down.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\guard\guard.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\guard\hit.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\guard\punch.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\guard\walk.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\throw\dead.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\throw\down.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\throw\hit.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\throw\stand.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\throw\stone.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\throw\throw.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\throw\walk.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\warp\dead.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\warp\dive.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\warp\down.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\warp\hit.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\warp\jump_out.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\warp\stand.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\txt\player\ImgPath.txt" />
     <Text Include="..\txt\player\ImgPath_debug.txt" />
+    <Text Include="..\txt\boss\imgPath.txt" />
+    <Text Include="..\txt\boss\imgPath_debug.txt" />
+    <Text Include="..\txt\guard\imgPath.txt" />
+    <Text Include="..\txt\guard\imgPath_debug.txt" />
+    <Text Include="..\txt\kick\imgPath.txt" />
+    <Text Include="..\txt\kick\imgPath_debug.txt" />
+    <Text Include="..\txt\warp\imgPath.txt" />
+    <Text Include="..\txt\warp\imgPath_debug.txt" />
+    <Text Include="..\txt\throw\imgPath.txt" />
+    <Text Include="..\txt\throw\imgPath_debug.txt" />
   </ItemGroup>
 </Project>

@@ -12,7 +12,7 @@ using namespace std;
 void Init();
 vector<string> ReadFile(const char* fileName);
 vector<int> split(string str, const char mark);
-vector<vector<int>>ReadFileSplit(const char* fileName);
+vector<vector<int>>ReadFileSplit(const char* fileName, const char mark);
 
 
 MainLoop::MainLoop() {
