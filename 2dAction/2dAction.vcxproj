@@ -220,21 +220,27 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\txt\boss\animationFrame.txt" />
+    <Text Include="..\txt\boss\attackActive.txt" />
     <Text Include="..\txt\boss\imgPath.txt" />
     <Text Include="..\txt\boss\imgPath_debug.txt" />
     <Text Include="..\txt\guard\animationFrame.txt" />
+    <Text Include="..\txt\guard\attackActive.txt" />
     <Text Include="..\txt\guard\imgPath.txt" />
     <Text Include="..\txt\guard\imgPath_debug.txt" />
     <Text Include="..\txt\kick\animationFrame.txt" />
+    <Text Include="..\txt\kick\attackActive.txt" />
     <Text Include="..\txt\kick\imgPath.txt" />
     <Text Include="..\txt\kick\imgPath_debug.txt" />
     <Text Include="..\txt\player\animationFrame.txt" />
+    <Text Include="..\txt\player\attackActive.txt" />
     <Text Include="..\txt\player\ImgPath.txt" />
     <Text Include="..\txt\player\ImgPath_debug.txt" />
     <Text Include="..\txt\throw\animationFrame.txt" />
+    <Text Include="..\txt\throw\attackActive.txt" />
     <Text Include="..\txt\throw\imgPath.txt" />
     <Text Include="..\txt\throw\imgPath_debug.txt" />
     <Text Include="..\txt\warp\animationFrame.txt" />
+    <Text Include="..\txt\warp\attackActive.txt" />
     <Text Include="..\txt\warp\imgPath.txt" />
     <Text Include="..\txt\warp\imgPath_debug.txt" />
   </ItemGroup>

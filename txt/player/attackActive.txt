@@ -1,0 +1,17 @@
+-1 //stand.png
+-1 //walk.png
+-1 //step.png
+-1 //hit.png
+-1 //hit_air.png
+-1 //jump.png
+-1 //fall.png
+-1 //fall_hit.png
+-1 //landing.png
+-1 //faint.png
+-1 //fainting.png
+-1 //down.png
+-1//dead.png
+-1 //guard.png
+3 4 5 //parry.png
+3 4 5 //side_attack.png
+3 4 5 //vertical_attack.png

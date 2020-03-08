@@ -1,0 +1,6 @@
+-1 //walk.png
+-1 //hit.png
+-1 //down.png
+-1 //dead.png
+-1 //guard.png
+3 4 //punch.png
