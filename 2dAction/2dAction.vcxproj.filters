@@ -210,5 +210,11 @@
     <Text Include="..\txt\warp\imgPath_debug.txt" />
     <Text Include="..\txt\throw\imgPath.txt" />
     <Text Include="..\txt\throw\imgPath_debug.txt" />
+    <Text Include="..\txt\boss\animationFrame.txt" />
+    <Text Include="..\txt\guard\animationFrame.txt" />
+    <Text Include="..\txt\kick\animationFrame.txt" />
+    <Text Include="..\txt\throw\animationFrame.txt" />
+    <Text Include="..\txt\warp\animationFrame.txt" />
+    <Text Include="..\txt\player\animationFrame.txt" />
   </ItemGroup>
 </Project>

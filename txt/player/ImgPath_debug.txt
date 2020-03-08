@@ -5,6 +5,7 @@
 ../image/player/hit_air.png
 ../image/player/jump.png
 ../image/player/fall.png
+../image/player/fall_hit.png
 ../image/player/landing.png
 ../image/player/faint.png
 ../image/player/fainting.png

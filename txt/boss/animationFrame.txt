@@ -1,0 +1,14 @@
+3 2 //stand.png
+4 2 //walk.png
+4 2 //hit.png
+13 1 //down.png
+1 1 //dead.png
+1 1 //guard.png
+7 1 //punch.png
+7 1 //dive.png
+5 1 //jump_out.png
+7 1 //ramming.png
+7 2 //spin_kick_front.png
+5 2 //spin_kick_back.png
+5 2 //h_punch.png
+5 3 //punch_combo.png
