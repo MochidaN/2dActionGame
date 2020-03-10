@@ -1,0 +1,11 @@
+../txt/enemy_hurtRect/stand.txt
+../txt/enemy_hurtRect/walk.txt
+../txt/enemy_hurtRect/guard.txt
+../txt/enemy_hurtRect/punch.txt
+../txt/enemy_hurtRect/jump_out.txt
+../txt/enemy_hurtRect/ramming.txt
+../txt/enemy_hurtRect/spin_kick_front.txt
+../txt/enemy_hurtRect/spin_kick_back.txt
+../txt/enemy_hurtRect/throw.txt
+../txt/enemy_hurtRect/h_punch.txt
+../txt/enemy_hurtRect/punch_combo.txt

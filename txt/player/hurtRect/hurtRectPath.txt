@@ -1,0 +1,10 @@
+../../txt/player/hurtRect/stand.txt
+../../txt/player/hurtRect/walk.txt
+../../txt/player/hurtRect/jump.txt
+../../txt/player/hurtRect/fall.txt
+../../txt/player/hurtRect/landing.txt
+../../txt/player/hurtRect/faint.txt
+../../txt/player/hurtRect/fainting.txt
+../../txt/player/hurtRect/guard.txt
+../../txt/player/hurtRect/side_attack.txt
+../../txt/player/hurtRect/vertical_attack.txt

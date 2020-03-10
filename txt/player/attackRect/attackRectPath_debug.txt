@@ -1,0 +1,3 @@
+../../txt/player/attackRect/parry.txt
+../../txt/player/attackRect/side_attack.txt
+../../txt/player/attackRect/vertical_attack.txt

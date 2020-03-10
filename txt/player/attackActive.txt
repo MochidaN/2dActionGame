@@ -14,4 +14,4 @@
 -1 //guard.png
 3 4 5 //parry.png
 3 4 5 //side_attack.png
-3 4 5 //vertical_attack.png
+3 4 //vertical_attack.png

@@ -1,0 +1,7 @@
+../../txt/enemy_attackRect/punch.txt
+../../txt/enemy_attackRect/jump_out.txt
+../../txt/enemy_attackRect/ramming.txt
+../../txt/enemy_attackRect/spin_kick_front.txt
+../../txt/enemy_attackRect/spin_kick_back.txt
+../../txt/enemy_attackRect/h_punch.txt
+../../txt/enemy_attackRect/punch_combo.txt
