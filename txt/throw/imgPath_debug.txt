@@ -1,6 +1,0 @@
-../image/throw/stand.png
-../image/throw/walk.png
-../image/throw/hit.png
-../image/throw/down.png
-../image/throw/dead.png
-../image/throw/throw.png

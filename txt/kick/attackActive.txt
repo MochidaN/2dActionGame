@@ -1,8 +1,0 @@
--1 //stand.png
--1 //walk.png
--1 //hit.png
--1 //down.png
--1 //dead.png
-2 3 4 5 6 //ramming.png
-6 7 //spin_kick_front.png
-3 4 //spin_kick_back.png

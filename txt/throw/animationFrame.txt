@@ -1,6 +1,0 @@
-3 2 //stand.png
-4 2 //walk.png
-4 2 //hit.png
-13 1 //down.png
-1 1 //dead.png
-4 4 //throw.png
