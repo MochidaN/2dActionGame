@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="..\image\map\map.csv" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\player\down.png">
@@ -194,6 +195,9 @@
       <Filter>リソース ファイル</Filter>
     </Image>
     <Image Include="..\image\warp\stand.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\map\mapchip.png">
       <Filter>リソース ファイル</Filter>
     </Image>
   </ItemGroup>

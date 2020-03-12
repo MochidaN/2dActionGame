@@ -8,28 +8,8 @@ using namespace std;
 
 void Init();
 
-//ファイルの読み込み
-//string fileName：読み込むファイル名
-//返値：読み込んだデータ
-vector<string> ReadFile(string fileName);
-
-//strをmarkで分割し、数値に変換したものを返す
-//string str：文字列
-//const char mark：区切り文字
-//返値：変換後の数字配列
-vector<int> split(string str, const char mark);
-
-//区切り文字のあるデータの読み込み
-//string fileName：ファイル名
-//const char mark：区切り文字
-//返値：読み込んだマップデータ
-vector<vector<int>>ReadFileSplit(string fileName, const char mark);
-
-
 MainLoop::MainLoop() {
 	Init();
-
-	m_next = SEQ_ID::NONE;
 
 	m_window = SDL_CreateWindow("window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH * MAP_CHIPSIZE, WINDOW_HEIGHT * MAP_CHIPSIZE, SDL_WINDOW_OPENGL);
 	if (m_window == NULL) {
@@ -39,6 +19,7 @@ MainLoop::MainLoop() {
 	if (m_renderer == NULL) {
 		OutputError("failed to create renderer");
 	}
+
 	//GUARD,WARP,KICK
 	vector<vector<ENEMY_ACTION>> action{ {ENEMY_ACTION::WALK, ENEMY_ACTION::HIT, ENEMY_ACTION::DOWN, ENEMY_ACTION::DEAD, ENEMY_ACTION::GUARD, ENEMY_ACTION::PUNCH}, {ENEMY_ACTION::STAND, ENEMY_ACTION::HIT, ENEMY_ACTION::DOWN, ENEMY_ACTION::DEAD, ENEMY_ACTION::DIVE, ENEMY_ACTION::JUMP_OUT}, { ENEMY_ACTION::STAND, ENEMY_ACTION::HIT, ENEMY_ACTION::DOWN, ENEMY_ACTION::DEAD, ENEMY_ACTION::RAMMING, ENEMY_ACTION::KICK_FRONT, ENEMY_ACTION::KICK_BACK} };
 	const short actionSize = action.size();
@@ -48,10 +29,10 @@ MainLoop::MainLoop() {
 	}
 
 #ifdef _DEBUG
-	vector<string> filePath{"../txt/guard/", "../txt/warp/", "../txt/kick/", "../txt/boss/", "../txt/player/"};
+	vector<string> filePath{ "../txt/guard/", "../txt/warp/", "../txt/kick/", "../txt/boss/", "../txt/player/" };
 	string enemyHurtRect("../txt/enemy_hurtRect/");
 	string enemyAttackRect("../txt/enemy_attackRect/");
-	string imgPathFile("imgPath_debug.txt");
+	//string imgPathFile("imgPath_debug.txt");
 	string hurtRectFile("hurtRectPath_debug.txt");
 	string attackRectFile("attackRectPath_debug.txt");
 #endif // _DEBUG
@@ -59,7 +40,7 @@ MainLoop::MainLoop() {
 	vector<string> filePath{ "../../txt/guard/", "../../txt/warp/", "../../txt/kick/", "../../txt/boss/", "../../txt/player/" };
 	string enemyHurtRect("../../txt/enemy_hurtRect/");
 	string enemyAttackRect("../../txt/enemy_attackRect/");
-	string imgPathFile("imgPath.txt");
+	//string imgPathFile("imgPath.txt");
 	string hurtRectFile("hurtRectPath.txt");
 	string attackRectFile("attackRectPath.txt");
 #endif // NDEBUG
@@ -68,24 +49,7 @@ MainLoop::MainLoop() {
 	string attackActiveFile("attackActive.txt");
 	string hurtActiveFile("hurtActive.txt");
 
-	const int charaNum = static_cast<int>(CHARA_ID::NUM);
-	m_characterTexture = new SDL_Texture**[charaNum];
-	for (int i = 0; i < charaNum; i++) {
-		vector<string> imagePath = ReadFile(filePath[i] + imgPathFile);
-		m_characterTexture[i] = new SDL_Texture*[imagePath.size()];
-		for (int j = 0, end = imagePath.size(); j < end; j++) {
-			SDL_Surface *img;
-			if ((img = IMG_Load(imagePath[i].c_str())) == NULL) {
-				OutputError("failed to open character image");
-			}
-			if ((m_characterTexture[i][j] = SDL_CreateTextureFromSurface(m_renderer, img)) == NULL) {
-				OutputError("failed to create character texture");
-			}
-			SDL_FreeSurface(img);
-		}
-	}
-
-	for (auto fp:filePath) {
+	for (auto fp : filePath) {
 		m_maxFrame.push_back(ReadFileSplit(fp + animFrameFile, ' '));
 	}
 
@@ -109,7 +73,7 @@ MainLoop::MainLoop() {
 	m_attackActive.push_back(paramToBit(ReadFileSplit(enemyAttackRect + attackActiveFile, ' ')));
 	m_attackActive.push_back(paramToBit(ReadFileSplit(filePath[static_cast<int>(CHARA_ID::PLAYER)] + attackActiveFile, ' ')));
 	m_hurtActive.push_back(paramToBit(ReadFileSplit(enemyHurtRect + hurtActiveFile, ' ')));
-	m_hurtActive.push_back( paramToBit(ReadFileSplit(filePath[static_cast<int>(CHARA_ID::PLAYER)] + hurtActiveFile, ' ')) );
+	m_hurtActive.push_back(paramToBit(ReadFileSplit(filePath[static_cast<int>(CHARA_ID::PLAYER)] + hurtActiveFile, ' ')));
 
 	auto setRect = [](vector<unsigned short> active, vector<string> rectPath) {
 		vector<vector<vector<int>>> rect;
@@ -128,27 +92,18 @@ MainLoop::MainLoop() {
 	vector<string> hurtPathHead{ enemyHurtRect, filePath[static_cast<int>(CHARA_ID::PLAYER)] + "hurtRect/" };
 	vector<string> attackPathHead{ enemyAttackRect, filePath[static_cast<int>(CHARA_ID::PLAYER)] + "attackRect/" };
 	for (int i = 0; i < hurtPathHead.size(); i++) {
-		vector<string> hurtRectPath( ReadFile(hurtPathHead[i] + hurtRectFile) );
+		vector<string> hurtRectPath(ReadFile(hurtPathHead[i] + hurtRectFile));
 		m_hurtRect.push_back(setRect(m_hurtActive[i], hurtRectPath));
 		vector<string> attackRectPath(ReadFile(attackPathHead[i] + attackRectFile));
 		m_attackRect.push_back(setRect(m_attackActive[i], attackRectPath));
 	}
 
 	CreateText(m_renderer, m_loadingText, u8"Loading...", 100, "white");
-	m_sequence = new Game();
+	m_sequence = new Game(m_renderer, m_enemyAction, m_maxFrame, m_attackActive, m_attackRect, m_hurtActive, m_hurtRect);
 }
 
 MainLoop::~MainLoop() {
 	delete m_sequence;
-	const int charaNum = static_cast<int>(CHARA_ID::NUM);
-	for (int i = 0; i < charaNum; i++) {
-		for (int j = 0; j < charaNum; j++) {
-			SDL_DestroyTexture(m_characterTexture[i][j]);
-		}
-		delete[] m_characterTexture[i];
-	}
-	delete[] m_characterTexture;
-
 	SDL_DestroyTexture(m_loadingText);
 	SDL_DestroyRenderer(m_renderer);
 	SDL_DestroyWindow(m_window);
@@ -157,15 +112,19 @@ MainLoop::~MainLoop() {
 }
 
 bool MainLoop::Update() {
-	m_sequence->Update(m_renderer);
+	SEQ_ID next = SEQ_ID::NONE;
+	if (!m_sequence->Update(m_renderer)) {		
+		next = m_sequence->MoveTo();
+	}
+
 	SDL_RenderPresent(m_renderer);//描画を反映
 
 	//遷移判定
-	switch (m_next) {
+	switch (next) {
 	case SEQ_ID::GAME:
 		delete m_sequence;
 		Loading();
-		m_sequence = new Game();
+		m_sequence = new Game(m_renderer, m_enemyAction, m_maxFrame, m_attackActive, m_attackRect, m_hurtActive, m_hurtRect);
 		break;
 	case SEQ_ID::QUIT: //終了
 		return false;
@@ -173,13 +132,7 @@ bool MainLoop::Update() {
 	default:
 		break;
 	}
-	m_next = SEQ_ID::NONE;
-
 	return true;
-}
-
-void MainLoop::MoveTo(SEQ_ID next) {
-	m_next = next;;
 }
 
 void MainLoop::Loading() {
@@ -197,12 +150,12 @@ void MainLoop::Loading() {
 }
 
 void Init() {
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
 		OutputError("unable to initialize SDL");
 	}
 
 	if (TTF_Init() < 0) {
-		cout << TTF_GetError() << endl; 
+		cout << TTF_GetError() << endl;
 		exit(1);
 	}
 
@@ -213,111 +166,6 @@ void Init() {
 		cout << "could not init IMG:" << IMG_GetError() << endl;
 		exit(1);
 	}
-}
 
-inline void OutputError(const char* msg) {
-	cout << msg << ":" << SDL_GetError() << endl;  exit(1);
-}
-
-SDL_Color ConvertToRGB(const char* color) {
-	if (color == "red") {
-		SDL_Color c = { 255, 0, 0, 255 };
-		return c;
-	}
-	else if (color == "green") {
-		SDL_Color c = { 0, 255, 0, 255 };
-		return c;
-	}
-	else if (color == "blue") {
-		SDL_Color c = { 0, 0, 255, 255 };
-		return c;
-	}
-	else if (color == "yellow") {
-		SDL_Color c = { 255, 255, 0, 255 };
-		return c;
-	}
-	else if (color == "black") {
-		SDL_Color c = { 0, 0, 0, 255 };
-		return c;
-	}
-	else if (color == "white") {
-		SDL_Color c = { 255, 255, 255, 255 };
-		return c;
-	}
-	else {
-		cout << color << "is not ready or not exist." << endl;
-		exit(1);
-	}
-}
-
-void CreateText(SDL_Renderer *renderer, SDL_Texture *texture, const char *text, int size, const char *color) {
-#ifdef _DEBUG
-	const char* fontPath = "../font/ipaexg.ttf";
-#endif
-
-#ifdef NDEBUG
-	const char* fontPath = "../../font/ipaexg.ttf";
-#endif
-
-	TTF_Font *font = TTF_OpenFont(fontPath, size);
-	if (!font) {
-		cout << "TTF_OpenFont:" << TTF_GetError() << endl;
-		exit(1);
-	}
-
-	SDL_Color fontColor = ConvertToRGB(color);
-	SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text, fontColor);
-	if (surface == NULL) {
-		OutputError("failed to create font surface");
-	}
-	
-	texture = SDL_CreateTextureFromSurface(renderer, surface);
-	if (texture == NULL) {
-		OutputError("failed to create texture");
-	}
-	SDL_FreeSurface(surface);
-	TTF_CloseFont(font);
-}
-
-vector<string> ReadFile(string fileName) {
-	std::ifstream ifs(fileName);
-	if (!ifs) {
-		cout << "failed to open file:" << fileName << endl;
-		exit(1);
-	}
-
-	vector<string> data;
-	std::string str;
-	while (getline(ifs, str)) {
-		data.push_back(str);
-	}
-
-	return data;
-}
-
-vector<int> split(string str, const char mark) {
-	stringstream ss{ str };
-	string buf;
-	vector<int> data;
-	while (getline(ss, buf, mark)) {
-		data.push_back(atoi(buf.c_str()));
-	}
-
-	return data;
-}
-
-vector<vector<int>> ReadFileSplit(string fileName, const char mark) {
-	ifstream ifs(fileName);
-	if (!ifs) {
-		cout << "failed to open file:" << fileName << endl;
-		exit(1);
-	}
-
-	string str;
-	vector<vector<int>> data;
-
-	while (getline(ifs, str)) {
-		data.push_back(split(str, mark));
-	}
-	return data;
+	SDL_JoystickEventState(SDL_ENABLE);//イベントを取得可能にする
 }

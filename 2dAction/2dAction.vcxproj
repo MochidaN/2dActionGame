@@ -165,6 +165,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\image\map\map.csv" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -188,6 +189,7 @@
     <Image Include="..\image\guard\hit.png" />
     <Image Include="..\image\guard\punch.png" />
     <Image Include="..\image\guard\walk.png" />
+    <Image Include="..\image\map\mapchip.png" />
     <Image Include="..\image\throw\dead.png" />
     <Image Include="..\image\throw\down.png" />
     <Image Include="..\image\throw\hit.png" />
