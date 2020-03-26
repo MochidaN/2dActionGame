@@ -2,12 +2,29 @@
 #include "sequence.hpp"
 #include "parameter.hpp"
 
+const short ANIME_INTERVAL = 1000 / 30;//アニメーション間隔
+
+const short IMG_SIZE[static_cast<short>(CHARA_ID::NUM)] = { ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, PLAYER_SIZE };
+const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 1, 0, 0, 0, 1 };
+
 //worldのサーフェイスにマップを描画
 //SDL_Surface *world：ワールドサーフェイス
 // SDL_Surface *mapChip：マップチップサーフェイス
 //vector<vector<int>> mapData：マップの配置データ
 //返値：なし
 void DrawWorld(SDL_Renderer *renderer, SDL_Surface *world, SDL_Surface *mapChip, vector<vector<int>> mapData);
+
+//次のアニメーションフレームを計算
+//hengFrame：現在の横コマ数
+//verticalFrame：現在の縦コマ数
+//maxFrame：最大コマ数(0:横 1:縦)
+//次のフレーム数
+vector<short> RetrunNextFrame(short hengFrame, short verticalFrame, vector<int> maxFrame);
+
+//アクション名を配列番号に変換
+//actionList：アクション一覧
+//nowAction：現在のアクション
+template <typename T = ENEMY_ACTION> const int ActionToIndex(vector<T> actionList, int nowAction);
 
 Sequence::Sequence() {
 	m_next = SEQ_ID::NONE;
@@ -53,7 +70,7 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vec
 		m_characterTexture[i] = new SDL_Texture*[imagePath.size()];
 		for (int j = 0, end = imagePath.size(); j < end; j++) {
 			SDL_Surface *img;
-			if ((img = IMG_Load(imagePath[i].c_str())) == NULL) {
+			if ((img = IMG_Load(imagePath[j].c_str())) == NULL) {
 				OutputError("failed to open character image");
 			}
 			if ((m_characterTexture[i][j] = SDL_CreateTextureFromSurface(renderer, img)) == NULL) {
@@ -69,6 +86,21 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vec
 	m_attackRect = attackRect;
 	m_hurtActive = hurtActive;
 	m_hurtRect = hurtRect;
+
+	const short enemyNum = static_cast<short>(CHARA_ID::NUM) - 1;
+	const short action[static_cast<short>(CHARA_ID::NUM)-1] = { static_cast<short>(ENEMY_ACTION::GUARD), static_cast<short>(ENEMY_ACTION::STAND),  static_cast<short>(ENEMY_ACTION::STAND),  static_cast<short>(ENEMY_ACTION::STAND)};
+	unsigned int time = SDL_GetTicks();
+	for (int id = 0; id < enemyNum; id++) {
+		m_chara[id] = new Character*[CHARA_NUM[id]];
+		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
+			SDL_Rect pos = { 400, 0, IMG_SIZE[id], IMG_SIZE[id]};
+			m_chara[id][cn] = new Enemy(100, 10, 10, 10, pos, action[id], time);
+		}
+	}
+	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
+	SDL_Rect pos = { 0, 0, IMG_SIZE[playerID], IMG_SIZE[playerID]};
+	m_chara[playerID] = new Character*[CHARA_NUM[playerID]];
+	m_chara[playerID][0] = new Player(100, 10, 10, 10, pos, static_cast<short>(PLAYER_ACTION::STAND), time);
 }
 
 Game::~Game() {
@@ -86,6 +118,8 @@ Game::~Game() {
 		delete[] m_characterTexture[i];
 	}
 	delete[] m_characterTexture;
+
+	//delete m_player;
 }
 
 bool Game::Update(SDL_Renderer *renderer) {
@@ -106,6 +140,33 @@ bool Game::Update(SDL_Renderer *renderer) {
 void Game::Draw(SDL_Renderer *renderer) {
 	SDL_Rect src = { 0, 0, WINDOW_WIDTH * MAP_CHIPSIZE, WINDOW_HEIGHT * MAP_CHIPSIZE};
 	SDL_RenderCopy(renderer, m_world, &src, NULL);
+
+	unsigned int nowTime = SDL_GetTicks();
+	const short charaNum = static_cast<short>(CHARA_ID::NUM);
+	for (int id = 0; id < charaNum; id++) {
+		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
+			short action = m_chara[id][cn]->GetState(CHARA_STATE::ACTION);
+			if (id < static_cast<short>(CHARA_ID::BOSS)) {
+				action = ActionToIndex(m_enemyAction[id], action);
+			}
+			vector<short> frame = { m_chara[id][cn]->GetState(CHARA_STATE::FRAME_H), m_chara[id][cn]->GetState(CHARA_STATE::FRAME_V) };
+			if (nowTime - m_chara[id][cn]->GetState(CHARA_STATE::TIME) >= ANIME_INTERVAL) {
+				//アニメーション更新
+				frame = RetrunNextFrame(frame[0], frame[1], m_maxFrame[id][action]);
+				m_chara[id][cn]->SetState(CHARA_STATE::FRAME_H, frame[0]);
+				m_chara[id][cn]->SetState(CHARA_STATE::FRAME_V, frame[1]);
+				m_chara[id][cn]->SetState(CHARA_STATE::TIME, nowTime);
+			}
+
+			SDL_Rect srcChara = { frame[0] * IMG_SIZE[id], frame[1] * IMG_SIZE[id], IMG_SIZE[id], IMG_SIZE[id] };
+			if ( m_chara[id][cn]->GetState(CHARA_STATE::DIR) == true) {//右向き
+				SDL_RenderCopy(renderer, m_characterTexture[id][action], &srcChara, &m_chara[id][cn]->GetPos());
+			}
+			else {//左
+				SDL_RenderCopyEx(renderer, m_characterTexture[id][action], &srcChara, &m_chara[id][cn]->GetPos(), 180, NULL, SDL_FLIP_VERTICAL);
+			}
+		}
+	}
 }
 
 EVENT GetEvent(SDL_Joystick *joystick) {
@@ -273,4 +334,39 @@ void DrawWorld(SDL_Renderer *renderer, SDL_Surface *world, SDL_Surface *mapChip,
 			SDL_BlitSurface(mapChip, &src, world, &dst);
 		}
 	}
+}
+
+vector<short> RetrunNextFrame(short hengFrame, short verticalFrame, vector<int> maxFrame) {
+	if (++hengFrame >= maxFrame[0]) {
+		hengFrame = 0;
+		if (++verticalFrame >= maxFrame[1]) {
+			verticalFrame = 0;
+		}
+	}
+
+	vector<short> nextFrame = { hengFrame, verticalFrame };
+	return nextFrame;
+}
+
+template <typename T>
+const int ActionToIndex( vector<T> actionList, int nowAction) {
+	T action = static_cast<T>(nowAction);
+	int min = 0;
+	int max = actionList.size();
+
+	while (min < max) {
+		int mid = (max + min) / 2;
+		if (actionList[mid] == action) {
+			return mid;
+		}
+		else if (action < actionList[mid]) {
+			max = mid;
+		}
+		else {
+			min = mid;
+		}
+	}
+
+	cout << "that action is not exist." << endl;
+	return -1;
 }

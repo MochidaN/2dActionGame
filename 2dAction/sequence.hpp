@@ -1,4 +1,5 @@
 #pragma once
+#include "character.hpp"
 
 using namespace std;
 
@@ -90,6 +91,8 @@ private:
 	vector<vector<vector<vector<int>>>> m_attackRect;//UŒ‚”»’è”ÍˆÍ
 	vector<vector<unsigned short>> m_hurtActive;//‚­‚ç‚¢”»’è‚Ì‚ ‚éƒtƒŒ[ƒ€
 	vector<vector<vector<vector<int>>>> m_hurtRect;//‚­‚ç‚¢”»’è”ÍˆÍ
+
+	Character **m_chara[static_cast<int>(CHARA_ID::NUM)];
 public :
 	Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vector<vector<vector<int>>> maxFrame, vector<vector<unsigned short>> attackActive, vector<vector<vector<vector<int>>>> attackRect, vector<vector<unsigned short>> hurtActive, vector<vector<vector<vector<int>>>> hurtRect);
 	~Game();
