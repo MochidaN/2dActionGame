@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include <algorithm>
+
 #include "sequence.hpp"
 #include "parameter.hpp"
 
@@ -6,6 +8,10 @@ const short ANIME_INTERVAL = 1000 / 30;//アニメーション間隔
 
 const short IMG_SIZE[static_cast<short>(CHARA_ID::NUM)] = { ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, PLAYER_SIZE };
 const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 1, 0, 0, 0, 1 };
+const short X = 0, Y = 1, W = 2, H = 3;
+const short g_playerMoveX = 2;
+const short g_yAdd = -25;
+const short g_yAdd_ground = -1;
 
 //worldのサーフェイスにマップを描画
 //SDL_Surface *world：ワールドサーフェイス
@@ -18,13 +24,30 @@ void DrawWorld(SDL_Renderer *renderer, SDL_Surface *world, SDL_Surface *mapChip,
 //hengFrame：現在の横コマ数
 //verticalFrame：現在の縦コマ数
 //maxFrame：最大コマ数(0:横 1:縦)
-//次のフレーム数
-vector<short> RetrunNextFrame(short hengFrame, short verticalFrame, vector<int> maxFrame);
+//endAnimation：アニメーションが一周したかどうか
+//返値：次のフレーム数
+vector<short> RetrunNextFrame(short hengFrame, short verticalFrame, vector<int> maxFrame, bool &endAnimation);
 
 //アクション名を配列番号に変換
 //actionList：アクション一覧
 //nowAction：現在のアクション
 template <typename T = ENEMY_ACTION> const int ActionToIndex(vector<T> actionList, int nowAction);
+
+//x座標の移動
+//nowPos：現在の座標(画像全体)
+//hurtRext：キャラの当たり判定
+//distance：移動距離
+//worldWidth：ワールドの端座標
+//mapData：マップ番号データ
+//返値：移動後の座標
+SDL_Rect MovePositionX(SDL_Rect nowPos, vector<int> hurtRect, int distance, int worldWidth, vector<vector<int>> mapData);
+
+//yAdd：y方向の移動量
+SDL_Rect MovePositionY(SDL_Rect nowPos, vector<int> hurtRect, short &yAdd, int worldHeight, vector<vector<int>> mapData);
+
+//移動時の衝突判定
+//返値：地上にいるかどうか
+bool Collision(SDL_Rect &nowPos, int prevX, int prevY, vector<int> hurtRect, vector<vector<int>> mapData);
 
 Sequence::Sequence() {
 	m_next = SEQ_ID::NONE;
@@ -94,13 +117,14 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vec
 		m_chara[id] = new Character*[CHARA_NUM[id]];
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
 			SDL_Rect pos = { 400, 0, IMG_SIZE[id], IMG_SIZE[id]};
-			m_chara[id][cn] = new Enemy(100, 10, 10, 10, pos, action[id], time);
+			m_chara[id][cn] = new Enemy(100, 10, 10, pos, action[id], time);
 		}
 	}
 	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
-	SDL_Rect pos = { 0, 0, IMG_SIZE[playerID], IMG_SIZE[playerID]};
+	const short stand = static_cast<short>(PLAYER_ACTION::STAND);
+	SDL_Rect pos = { 0, WINDOW_HEIGHT * MAP_CHIPSIZE - (MAP_CHIPSIZE + m_hurtRect[1][stand][0][Y] + m_hurtRect[1][stand][0][H]), IMG_SIZE[playerID], IMG_SIZE[playerID] };
 	m_chara[playerID] = new Character*[CHARA_NUM[playerID]];
-	m_chara[playerID][0] = new Player(100, 10, 10, 10, pos, static_cast<short>(PLAYER_ACTION::STAND), time);
+	m_chara[playerID][0] = new Player(100, 10, 10, pos, static_cast<short>(PLAYER_ACTION::STAND), time, g_yAdd_ground);
 }
 
 Game::~Game() {
@@ -111,34 +135,77 @@ Game::~Game() {
 	SDL_DestroyTexture(m_world);
 	SDL_FreeSurface(m_mapChip);
 	const int charaNum = static_cast<int>(CHARA_ID::NUM);
-	for (int i = 0; i < charaNum; i++) {
-		for (int j = 0; j < charaNum; j++) {
-			SDL_DestroyTexture(m_characterTexture[i][j]);
+	vector<short> actionNum;
+	for (int id = 0, end = m_enemyAction.size(); id < end; id++) {
+		actionNum.push_back(m_enemyAction[id].size());
+	}
+	actionNum.push_back(static_cast<short>(ENEMY_ACTION::NUM));
+	actionNum.push_back(static_cast<short>(PLAYER_ACTION::NUM));
+
+	for (int id = 0; id < charaNum; id++) {
+		for (int cn = 0; cn < actionNum[id]; cn++) {
+			SDL_DestroyTexture(m_characterTexture[id][cn]);
 		}
-		delete[] m_characterTexture[i];
+		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
+			delete m_chara[id][cn];
+		}
+		delete[] m_characterTexture[id];
+		delete[] m_chara[id];
 	}
 	delete[] m_characterTexture;
-
-	//delete m_player;
 }
 
 bool Game::Update(SDL_Renderer *renderer) {
 	Draw(renderer);
 
 	EVENT event = GetEvent(m_joystick);
+	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
 	switch (event) {
 	case EVENT::QUIT: {
 		m_next = SEQ_ID::QUIT;
 		return false;
 		break;
 	}
-
+	case EVENT::JOY_CROSS: {
+		if (m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground) {
+			m_chara[playerID][0]->SetState(CHARA_STATE::Y_ADD, g_yAdd);
+		}
+		break;
 	}
+	case EVENT::JOY_HAT_LEFT: {
+		m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::WALK));
+		m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, g_playerMoveX);
+		m_chara[playerID][0]->SetState(CHARA_STATE::DIR, g_left);
+		break;
+	}
+	case EVENT::JOY_HAT_RIGHT: {
+		m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::WALK));
+		m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, g_playerMoveX);
+		m_chara[playerID][0]->SetState(CHARA_STATE::DIR, g_right);
+		break;
+	}
+	case EVENT::JOY_HAT_CENTERED: {
+		m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, 0);
+		m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::STAND));
+		break;
+	}
+	}
+
+	SDL_Rect pos = m_chara[playerID][0]->GetPos();
+	const short action = m_chara[playerID][0]->GetState(CHARA_STATE::ACTION);
+	if (m_chara[playerID][0]->GetState(CHARA_STATE::X_ADD) > 0) {
+		pos = MovePositionX(pos, m_hurtRect[1][action][0], m_chara[playerID][0]->GetState(CHARA_STATE::X_ADD) * m_chara[playerID][0]->GetState(CHARA_STATE::DIR), WORLD_WIDTH, m_mapData);
+	}
+	short yAdd = m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD);
+	m_chara[playerID][0]->SetPos(MovePositionY(pos, m_hurtRect[1][action][0], yAdd, WORLD_HEIGHT, m_mapData));
+	//m_hurtRect[1][action][0]　コマ数参照に変更する
+	m_chara[playerID][0]->SetState(CHARA_STATE::Y_ADD, yAdd);
+
 	return true;
 }
 
 void Game::Draw(SDL_Renderer *renderer) {
-	SDL_Rect src = { 0, 0, WINDOW_WIDTH * MAP_CHIPSIZE, WINDOW_HEIGHT * MAP_CHIPSIZE};
+	SDL_Rect src = { 0, 0, WINDOW_WIDTH * MAP_CHIPSIZE, WINDOW_HEIGHT * MAP_CHIPSIZE };
 	SDL_RenderCopy(renderer, m_world, &src, NULL);
 
 	unsigned int nowTime = SDL_GetTicks();
@@ -150,16 +217,26 @@ void Game::Draw(SDL_Renderer *renderer) {
 				action = ActionToIndex(m_enemyAction[id], action);
 			}
 			vector<short> frame = { m_chara[id][cn]->GetState(CHARA_STATE::FRAME_H), m_chara[id][cn]->GetState(CHARA_STATE::FRAME_V) };
-			if (nowTime - m_chara[id][cn]->GetState(CHARA_STATE::TIME) >= ANIME_INTERVAL) {
+			if (nowTime - m_chara[id][cn]->GetTime() >= ANIME_INTERVAL) {
 				//アニメーション更新
-				frame = RetrunNextFrame(frame[0], frame[1], m_maxFrame[id][action]);
+				bool endAnimation = false;
+				frame = RetrunNextFrame(frame[0], frame[1], m_maxFrame[id][action], endAnimation);
+				if (endAnimation == true && m_chara[id][cn]->GetState(CHARA_STATE::ACTION) != static_cast<short>(ENEMY_ACTION::WALK)) {
+					if (id != 0) {
+						m_chara[id][cn]->SetState(CHARA_STATE::ACTION, 0);
+					}
+					else {
+						m_chara[id][cn]->SetState(CHARA_STATE::ACTION, static_cast<int>(ENEMY_ACTION::GUARD));
+					}
+				}
+
 				m_chara[id][cn]->SetState(CHARA_STATE::FRAME_H, frame[0]);
 				m_chara[id][cn]->SetState(CHARA_STATE::FRAME_V, frame[1]);
-				m_chara[id][cn]->SetState(CHARA_STATE::TIME, nowTime);
+				m_chara[id][cn]->SetTime(nowTime);
 			}
 
 			SDL_Rect srcChara = { frame[0] * IMG_SIZE[id], frame[1] * IMG_SIZE[id], IMG_SIZE[id], IMG_SIZE[id] };
-			if ( m_chara[id][cn]->GetState(CHARA_STATE::DIR) == true) {//右向き
+			if (m_chara[id][cn]->GetState(CHARA_STATE::DIR) == true) {//右向き
 				SDL_RenderCopy(renderer, m_characterTexture[id][action], &srcChara, &m_chara[id][cn]->GetPos());
 			}
 			else {//左
@@ -181,25 +258,34 @@ EVENT GetEvent(SDL_Joystick *joystick) {
 	if (SDL_PollEvent(&event)) {//キューにイベントがあったとき
 		switch (event.type) {
 		case SDL_JOYBUTTONDOWN:
-			if (SDL_JoystickGetButton(joystick, 2)) {//〇ボタン
+			if (SDL_JoystickGetButton(joystick, 1)) {//〇ボタン
 				return EVENT::JOY_CIRCLE;
 			}
-			else if (SDL_JoystickGetButton(joystick, 1)) {//×ボタン
+			else if (SDL_JoystickGetButton(joystick, 0)) {//×ボタン
 				return EVENT::JOY_CROSS;
 			}
-			else if (SDL_JoystickGetButton(joystick, 4)) {//L1
+			else if (SDL_JoystickGetButton(joystick, 9)) {//L1
 				return EVENT::JOY_L1_DOWN;
 			}
-			else if (SDL_JoystickGetButton(joystick, 5)) {//R1
+			else if (SDL_JoystickGetButton(joystick, 10)) {//R1
 				return EVENT::JOY_R1;
+			}
+			else if (SDL_JoystickGetButton(joystick, 13)) {//左
+				return EVENT::JOY_HAT_LEFT;
+			}
+			else if (SDL_JoystickGetButton(joystick, 14)) {//右
+				return EVENT::JOY_HAT_RIGHT;
 			}
 			break;
 		case SDL_JOYBUTTONUP:
-			if (!SDL_JoystickGetButton(joystick, 4)) {//L1
+			if ((int)event.jbutton.button == 10) {//L1
 				return EVENT::JOY_L1_UP;
 			}
+			else if ((int)event.jbutton.button == 13 || (int)event.jbutton.button == 14) {
+				return EVENT::JOY_HAT_CENTERED;
+			}
 			break;
-		case SDL_JOYHATMOTION://十字キーが押されたとき
+		case SDL_JOYHATMOTION: {//十字キーが押されたとき
 			switch (SDL_JoystickGetHat(joystick, 0)) {
 			case SDL_HAT_RIGHT:
 				return EVENT::JOY_HAT_RIGHT;
@@ -212,9 +298,11 @@ EVENT GetEvent(SDL_Joystick *joystick) {
 				break;
 			}
 			break;
-		case SDL_QUIT://ウィンドウの×ボタン
+		}
+		case SDL_QUIT: {//ウィンドウの×ボタン
 			return EVENT::QUIT;
 			break;
+		}
 		}
 	}
 	return EVENT::NONE;
@@ -336,11 +424,13 @@ void DrawWorld(SDL_Renderer *renderer, SDL_Surface *world, SDL_Surface *mapChip,
 	}
 }
 
-vector<short> RetrunNextFrame(short hengFrame, short verticalFrame, vector<int> maxFrame) {
+vector<short> RetrunNextFrame(short hengFrame, short verticalFrame, vector<int> maxFrame, bool &endAnimation) {
+	endAnimation = false;
 	if (++hengFrame >= maxFrame[0]) {
 		hengFrame = 0;
 		if (++verticalFrame >= maxFrame[1]) {
 			verticalFrame = 0;
+			endAnimation = true;
 		}
 	}
 
@@ -369,4 +459,72 @@ const int ActionToIndex( vector<T> actionList, int nowAction) {
 
 	cout << "that action is not exist." << endl;
 	return -1;
+}
+
+SDL_Rect MovePositionX(SDL_Rect nowPos, vector<int> hurtRect, int distance, int worldWidth, vector<vector<int>> mapData) {
+	const int prevX = nowPos.x;
+	nowPos.x += distance;
+
+	const int charaPos = nowPos.x + hurtRect[X];
+	if (charaPos < 0) {
+		nowPos.x = -hurtRect[X] + 1;
+	}
+	else if(charaPos + hurtRect[W] > worldWidth * MAP_CHIPSIZE) {
+		nowPos.x = worldWidth * MAP_CHIPSIZE - (hurtRect[X] + hurtRect[W]);
+	}
+
+	Collision(nowPos, prevX, nowPos.y, hurtRect, mapData);
+	return nowPos;
+}
+
+SDL_Rect MovePositionY(SDL_Rect nowPos, vector<int> hurtRect, short &yAdd, int worldHeight, vector<vector<int>> mapData) {
+	yAdd++;
+	const int prevY = nowPos.y;
+	nowPos.y += yAdd;
+
+	if (nowPos.y + hurtRect[Y] < 0) {
+		nowPos.y = -hurtRect[Y];
+	}
+
+	if (Collision(nowPos, nowPos.x, prevY, hurtRect, mapData)) {
+		yAdd = g_yAdd_ground;
+	}
+
+	return nowPos;
+}
+
+bool Collision(SDL_Rect &nowPos, int prevX, int prevY, vector<int> hurtRect, vector<vector<int>> mapData) {
+	bool landing = false;//着地したか否か
+	const short left = (nowPos.x + hurtRect[X]) / MAP_CHIPSIZE;
+	short right = (nowPos.x + hurtRect[X] + hurtRect[W] + MAP_CHIPSIZE - 1) / MAP_CHIPSIZE;
+	if (right >= WORLD_WIDTH) {
+		right = WORLD_WIDTH;
+	}
+	const short top = (nowPos.y + hurtRect[Y]) / MAP_CHIPSIZE;
+	short bottom = (nowPos.y + hurtRect[Y] + hurtRect[H] + MAP_CHIPSIZE - 1) / MAP_CHIPSIZE;
+	if (bottom >= WORLD_HEIGHT) {
+		bottom = WORLD_HEIGHT;
+	}
+	
+	for (int w = left; w < right; w++) {
+		for (int h = top; h < bottom; h++) {
+			if (mapData[w][h] >= 1) {
+				/*
+				int x = max(nowPos.x, prevX);
+				x /= MAP_CHIPSIZE;
+				x *= MAP_CHIPSIZE;
+				nowPos.x = x;
+				int y = max(nowPos.y, prevY);
+				y /= MAP_CHIPSIZE;
+				y *= MAP_CHIPSIZE;
+				nowPos.y = y;
+				*/
+				if (h == bottom - 1) { landing = true; }
+				nowPos.x = prevX;
+				nowPos.y = prevY;
+			}
+		}
+	}
+
+	return landing;
 }

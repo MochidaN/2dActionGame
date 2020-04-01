@@ -17,7 +17,6 @@ enum class CHARA_ID {
 	GUARD,
 	WARP,
 	KICK,
-	//THROW,
 	BOSS,
 	PLAYER,
 	NUM
@@ -36,7 +35,6 @@ enum class ENEMY_ACTION {
 	RAMMING,
 	KICK_FRONT,
 	KICK_BACK,
-	//THROW,
 	HARD_PUNCH,
 	COMBO_PUNCH,
 	NUM
