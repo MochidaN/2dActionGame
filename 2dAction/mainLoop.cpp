@@ -54,7 +54,7 @@ MainLoop::MainLoop() {
 	}
 
 	auto paramToBit = [](vector<vector<int>> num) {
-		vector<unsigned short> flag;
+		vector<unsigned int> flag;
 		for (auto i : num) {
 			if (i[0] < 0) {
 				flag.push_back(0);
@@ -75,17 +75,11 @@ MainLoop::MainLoop() {
 	m_hurtActive.push_back(paramToBit(ReadFileSplit(enemyHurtRect + hurtActiveFile, ' ')));
 	m_hurtActive.push_back(paramToBit(ReadFileSplit(filePath[static_cast<int>(CHARA_ID::PLAYER)] + hurtActiveFile, ' ')));
 
-	auto setRect = [](vector<unsigned short> active, vector<string> rectPath) {
+	auto setRect = [](vector<string> rectPath) {
 		vector<vector<vector<int>>> rect;
-		for (int i = 0; i < active.size(); i++) {
-			if (active[i] == 0) {
-				rect.resize(rect.size() + 1);
-				rect[i].resize(rect.size() + 1);
-				rect[i][0].push_back(-1);
-			}
-			else {
-				rect.push_back(ReadFileSplit(rectPath[i], ' '));
-			}
+		const short loopNum = rectPath.size();
+		for (int i = 0; i < loopNum; i++) {
+			rect.push_back(ReadFileSplit(rectPath[i], ' '));
 		}
 		return rect;
 	};
@@ -93,11 +87,11 @@ MainLoop::MainLoop() {
 	vector<string> attackPathHead{ enemyAttackRect, filePath[static_cast<int>(CHARA_ID::PLAYER)] + "attackRect/" };
 	for (int i = 0; i < hurtPathHead.size(); i++) {
 		vector<string> hurtRectPath(ReadFile(hurtPathHead[i] + hurtRectFile));
-		m_hurtRect.push_back(setRect(m_hurtActive[i], hurtRectPath));
+		m_hurtRect.push_back(setRect(hurtRectPath));
 		vector<string> attackRectPath(ReadFile(attackPathHead[i] + attackRectFile));
-		m_attackRect.push_back(setRect(m_attackActive[i], attackRectPath));
+		m_attackRect.push_back(setRect(attackRectPath));
 	}
-
+	
 	CreateText(m_renderer, m_loadingText, u8"Loading...", 100, "white");
 	m_sequence = new Game(m_renderer, m_enemyAction, m_maxFrame, m_attackActive, m_attackRect, m_hurtActive, m_hurtRect);
 }

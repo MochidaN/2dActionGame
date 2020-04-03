@@ -1,0 +1,17 @@
+../../txt/player/attackRect/stand.txt
+../../txt/player/attackRect/walk.txt
+../../txt/player/attackRect/step.txt
+../../txt/player/attackRect/hit.txt
+../../txt/player/attackRect/hit_air.txt
+../../txt/player/attackRect/jump.txt
+../../txt/player/attackRect/fall.txt
+../../txt/player/attackRect/fall_hit.txt
+../../txt/player/attackRect/landing.txt
+../../txt/player/attackRect/faint.txt
+../../txt/player/attackRect/fainting.txt
+../../txt/player/attackRect/down.txt
+../../txt/player/attackRect/dead.txt
+../../txt/player/attackRect/guard.txt
+../../txt/player/attackRect/parry.txt
+../../txt/player/attackRect/side_attack.txt
+../../txt/player/attackRect/vertical_attack.txt

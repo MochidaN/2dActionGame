@@ -85,14 +85,14 @@ private:
 
 	vector<vector<ENEMY_ACTION>> m_enemyAction;//各敵が持つアクション
 	vector<vector<vector<int>>> m_maxFrame;//各アニメーションのフレーム数
-	vector<vector<unsigned short>> m_attackActive;//攻撃判定のあるフレーム
+	vector<vector<unsigned int>> m_attackActive;//攻撃判定のあるフレーム
 	vector<vector<vector<vector<int>>>> m_attackRect;//攻撃判定範囲
-	vector<vector<unsigned short>> m_hurtActive;//くらい判定のあるフレーム
+	vector<vector<unsigned int>> m_hurtActive;//くらい判定のあるフレーム
 	vector<vector<vector<vector<int>>>> m_hurtRect;//くらい判定範囲
 
 	Character **m_chara[static_cast<int>(CHARA_ID::NUM)];
 public :
-	Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vector<vector<vector<int>>> maxFrame, vector<vector<unsigned short>> attackActive, vector<vector<vector<vector<int>>>> attackRect, vector<vector<unsigned short>> hurtActive, vector<vector<vector<vector<int>>>> hurtRect);
+	Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vector<vector<vector<int>>> maxFrame, vector<vector<unsigned int>> attackActive, vector<vector<vector<vector<int>>>> attackRect, vector<vector<unsigned int>> hurtActive, vector<vector<vector<vector<int>>>> hurtRect);
 	~Game();
 
 	bool Update(SDL_Renderer *renderer);
