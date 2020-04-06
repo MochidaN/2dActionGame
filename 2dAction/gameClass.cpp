@@ -222,7 +222,12 @@ bool Game::Update(SDL_Renderer *renderer) {
 }
 
 void Game::Draw(SDL_Renderer *renderer) {
-	SDL_Rect src = { 0, 0, WINDOW_WIDTH * MAP_CHIPSIZE, WINDOW_HEIGHT * MAP_CHIPSIZE };
+	int windowPosX = (m_chara[static_cast<short>(CHARA_ID::PLAYER)][0]->GetPos().x + m_hurtRect[1][static_cast<short>(PLAYER_ACTION::STAND)][0][X]) - (WINDOW_WIDTH * MAP_CHIPSIZE / 2);
+	
+	if (windowPosX < 0) { windowPosX = 0; }
+	else if (windowPosX + WINDOW_WIDTH * MAP_CHIPSIZE > WORLD_WIDTH * MAP_CHIPSIZE) { windowPosX = (WORLD_WIDTH - WINDOW_WIDTH) * MAP_CHIPSIZE; }
+	
+	SDL_Rect src = { windowPosX, 0, WINDOW_WIDTH * MAP_CHIPSIZE, WINDOW_HEIGHT * MAP_CHIPSIZE };
 	SDL_RenderCopy(renderer, m_world, &src, NULL);
 
 	unsigned int nowTime = SDL_GetTicks();
@@ -253,15 +258,19 @@ void Game::Draw(SDL_Renderer *renderer) {
 				m_chara[id][cn]->SetTime(nowTime);
 			}
 
+			static const short playerID = static_cast<short>(CHARA_ID::PLAYER);
 			SDL_Rect srcChara = { frame[0] * IMG_SIZE[id], frame[1] * IMG_SIZE[id], IMG_SIZE[id], IMG_SIZE[id] };
+			SDL_Rect dstRect = m_chara[id][cn]->GetPos();
+			dstRect.x -= windowPosX;
 			if (m_chara[id][cn]->GetState(CHARA_STATE::DIR) == true) {//‰EŒü‚«
-				SDL_RenderCopy(renderer, m_characterTexture[id][action], &srcChara, &m_chara[id][cn]->GetPos());
+				SDL_RenderCopy(renderer, m_characterTexture[id][action], &srcChara, &dstRect);
 			}
 			else {//¶
-				SDL_RenderCopyEx(renderer, m_characterTexture[id][action], &srcChara, &m_chara[id][cn]->GetPos(), 180, NULL, SDL_FLIP_VERTICAL);
+				SDL_RenderCopyEx(renderer, m_characterTexture[id][action], &srcChara, &dstRect, 180, NULL, SDL_FLIP_VERTICAL);
 			}
 		}
 	}
+
 }
 
 EVENT GetEvent(SDL_Joystick *joystick) {
@@ -490,7 +499,7 @@ SDL_Rect MovePositionX(SDL_Rect nowPos, vector<int> hurtRect, int distance, int 
 	else if(charaPos + hurtRect[W] > worldWidth * MAP_CHIPSIZE) {
 		nowPos.x = worldWidth * MAP_CHIPSIZE - (hurtRect[X] + hurtRect[W]);
 	}
-
+	
 	Collision(nowPos, prevX, nowPos.y, hurtRect, mapData);
 	return nowPos;
 }
