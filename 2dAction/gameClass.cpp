@@ -46,15 +46,16 @@ SDL_Rect MovePositionX(SDL_Rect nowPos, vector<int> hurtRect, int distance, int 
 //yAdd：y方向の移動量
 SDL_Rect MovePositionY(SDL_Rect nowPos, vector<int> hurtRect, short &yAdd, int worldHeight, vector<vector<int>> mapData);
 
-//右向き用座標を反転
+//キャラ当たり判定の座標を反転
 //rect：右向きの座標
-//dir：今の向き
 //imgWidth：画像の幅
-vector<int> FlipRect(vector<int> rect, short dir, int imgWidth);
+vector<int> FlipRect(vector<int> rect, int imgWidth);
+
+void CollisionX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vector<int>> mapData);
 
 //移動時の衝突判定
 //返値：地上にいるかどうか
-bool Collision(SDL_Rect &nowPos, int prevX, int prevY, vector<int> hurtRect, vector<vector<int>> mapData);
+bool CollisionY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vector<int>> mapData);
 
 Sequence::Sequence() {
 	m_next = SEQ_ID::NONE;
@@ -185,18 +186,37 @@ bool Game::Update(SDL_Renderer *renderer) {
 			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::JUMP));
 			m_chara[playerID][0]->SetState(CHARA_STATE::Y_ADD, g_yAdd);
 		}
+		else {
+			//cout << m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) << endl;
+		}
 		break;
 	}
 	case EVENT::JOY_HAT_LEFT: {
 		m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::WALK));
 		m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, g_playerMoveX);
-		m_chara[playerID][0]->SetState(CHARA_STATE::DIR, g_left);
+		
+		if (m_chara[playerID][0]->GetState(CHARA_STATE::DIR) == g_right) {//右向きから左向きになるとき
+			SDL_Rect pos = m_chara[playerID][0]->GetPos();
+			const short action = m_chara[playerID][0]->GetState(CHARA_STATE::ACTION);
+			vector<int> fRect = FlipRect(m_hurtRect[1][action][0], IMG_SIZE[playerID]);
+			pos.x -= (fRect[X] - m_hurtRect[1][action][0][X]);
+			m_chara[playerID][0]->SetPos(pos);
+			m_chara[playerID][0]->SetState(CHARA_STATE::DIR, g_left);
+		}
 		break;
 	}
 	case EVENT::JOY_HAT_RIGHT: {
 		m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::WALK));
 		m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, g_playerMoveX);
-		m_chara[playerID][0]->SetState(CHARA_STATE::DIR, g_right);
+
+		if (m_chara[playerID][0]->GetState(CHARA_STATE::DIR) == g_left) {//左向きから右向きになるとき
+			SDL_Rect pos = m_chara[playerID][0]->GetPos();
+			const short action = m_chara[playerID][0]->GetState(CHARA_STATE::ACTION);
+			vector<int> fRect = FlipRect(m_hurtRect[1][action][0], IMG_SIZE[playerID]);
+			pos.x -= (m_hurtRect[1][action][0][X] - fRect[X]);
+			m_chara[playerID][0]->SetPos(pos);
+			m_chara[playerID][0]->SetState(CHARA_STATE::DIR, g_right);
+		}
 		break;
 	}
 	case EVENT::JOY_HAT_CENTERED: {
@@ -207,14 +227,16 @@ bool Game::Update(SDL_Renderer *renderer) {
 	}
 
 	SDL_Rect pos = m_chara[playerID][0]->GetPos();
-	const short action = m_chara[playerID][0]->GetState(CHARA_STATE::ACTION);
-	vector<int> hurtRect = FlipRect(m_hurtRect[1][action][0], m_chara[playerID][0]->GetState(CHARA_STATE::DIR), IMG_SIZE[playerID]);
+	//const short action = m_chara[playerID][0]->GetState(CHARA_STATE::ACTION);
+	vector<int> hurtRect = m_hurtRect[1][m_chara[playerID][0]->GetState(CHARA_STATE::ACTION)][0];
+	if (m_chara[playerID][0]->GetState(CHARA_STATE::DIR) == g_left ) {//左向きの時反転
+		hurtRect = FlipRect(hurtRect, IMG_SIZE[playerID]);
+	}
 	if (m_chara[playerID][0]->GetState(CHARA_STATE::X_ADD) > 0) {
 		pos = MovePositionX(pos, hurtRect, m_chara[playerID][0]->GetState(CHARA_STATE::X_ADD) * m_chara[playerID][0]->GetState(CHARA_STATE::DIR), WORLD_WIDTH, m_mapData);
 	}
 	short yAdd = m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD);
 	m_chara[playerID][0]->SetPos(MovePositionY(pos, hurtRect, yAdd, WORLD_HEIGHT, m_mapData));
-
 	//m_hurtRect[1][action][0]　コマ数参照に変更する
 	m_chara[playerID][0]->SetState(CHARA_STATE::Y_ADD, yAdd);
 
@@ -494,13 +516,13 @@ SDL_Rect MovePositionX(SDL_Rect nowPos, vector<int> hurtRect, int distance, int 
 	nowPos.x += distance;
 	const int charaPos = nowPos.x + hurtRect[X];
 	if (charaPos < 0) {
-		nowPos.x = -hurtRect[X] + 1;
+		nowPos.x = -hurtRect[X];
 	}
 	else if(charaPos + hurtRect[W] > worldWidth * MAP_CHIPSIZE) {
 		nowPos.x = worldWidth * MAP_CHIPSIZE - (hurtRect[X] + hurtRect[W]);
 	}
 	
-	Collision(nowPos, prevX, nowPos.y, hurtRect, mapData);
+	CollisionX(nowPos, prevX, hurtRect, mapData);
 	return nowPos;
 }
 
@@ -509,60 +531,72 @@ SDL_Rect MovePositionY(SDL_Rect nowPos, vector<int> hurtRect, short &yAdd, int w
 	const int prevY = nowPos.y;
 	nowPos.y += yAdd;
 	
-	if (nowPos.y + hurtRect[Y] < 0) {
+	const int charaPos = nowPos.y + hurtRect[Y];
+	if (charaPos < 0) {
 		nowPos.y = -hurtRect[Y];
 	}
-
-	if (Collision(nowPos, nowPos.x, prevY, hurtRect, mapData)) {
-		yAdd = g_yAdd_ground;
+	else if (charaPos + hurtRect[H] > worldHeight * MAP_CHIPSIZE) {
+		nowPos.y = worldHeight * MAP_CHIPSIZE - (hurtRect[Y] + hurtRect[H]);
 	}
 
+	if (CollisionY(nowPos, nowPos.y, hurtRect, mapData)) {
+		yAdd = g_yAdd_ground;
+	}
+	
 	return nowPos;
 }
 
-vector<int> FlipRect(vector<int> rect, short dir, int imgWidth) {
-	vector<int> result = rect;
-	if (dir == g_left) {//左
-		result[X] = imgWidth - (result[X] + result[W]);
-	}
-	return result;
+inline vector<int> FlipRect(vector<int> rect, int imgWidth) {
+	rect[X] = imgWidth - (rect[X] + rect[W]);
+	return rect;
 }
 
-bool Collision(SDL_Rect &nowPos, int prevX, int prevY, vector<int> hurtRect, vector<vector<int>> mapData) {
+
+void CollisionX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vector<int>> mapData) {
+	const short left = (nowPos.x + hurtRect[X]) / MAP_CHIPSIZE;
+	short right = (nowPos.x + hurtRect[X] + hurtRect[W] + MAP_CHIPSIZE - 1) / MAP_CHIPSIZE;
+	if (right > WORLD_WIDTH) { right = WORLD_WIDTH; }
+
+	const short top = (nowPos.y + hurtRect[Y]) / MAP_CHIPSIZE;
+	short bottom = (nowPos.y + hurtRect[Y] + hurtRect[H]) / MAP_CHIPSIZE;
+	if (bottom > WORLD_HEIGHT) { bottom = WORLD_HEIGHT; }
+
+	for (int w = left; w < right; w++) {
+		for (int h = top; h < bottom; h++) {
+			if (mapData[w][h] >= 1) {
+				int x = max(nowPos.x, prevX);
+				x /= MAP_CHIPSIZE;
+				if (nowPos.x - prevX < 0) { x++; }
+				x *= MAP_CHIPSIZE;
+				nowPos.x = x;
+				
+				//nowPos.x = prevX;
+			}
+		}
+	}
+}
+
+bool CollisionY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vector<int>> mapData) {
 	bool landing = false;//着地したか否か
 	const short left = (nowPos.x + hurtRect[X]) / MAP_CHIPSIZE;
 	short right = (nowPos.x + hurtRect[X] + hurtRect[W] + MAP_CHIPSIZE - 1) / MAP_CHIPSIZE;
-	if (right >= WORLD_WIDTH) {
-		right = WORLD_WIDTH;
-	}
+	if (right > WORLD_WIDTH) { right = WORLD_WIDTH; }
 	const short top = (nowPos.y + hurtRect[Y]) / MAP_CHIPSIZE;
 	short bottom = (nowPos.y + hurtRect[Y] + hurtRect[H] + MAP_CHIPSIZE - 1) / MAP_CHIPSIZE;
-	if (bottom >= WORLD_HEIGHT) {
+	if (bottom > WORLD_HEIGHT) {
 		bottom = WORLD_HEIGHT;
 	}
 	
 	for (int w = left; w < right; w++) {
 		for (int h = top; h < bottom; h++) {
 			if (mapData[w][h] >= 1) {
-				/*
-				auto back = [](int now, int prev) {
-					if (now - prev >= 0) {//右へ移動
-						return prev ;
-					}
-					return now;
-				};
-				int x = back(nowPos.x, prevX);
-				x /= MAP_CHIPSIZE;
-				x *= MAP_CHIPSIZE;
-				nowPos.x = x;
+				cout << nowPos.y << "  " << prevY << endl;
 				int y = max(nowPos.y, prevY);
 				y /= MAP_CHIPSIZE;
 				y *= MAP_CHIPSIZE;
 				nowPos.y = y;
-				*/
-				if (h == WORLD_HEIGHT - 1) { landing = true; }
-				nowPos.x = prevX;
-				nowPos.y = prevY;
+				
+				landing = true;
 			}
 		}
 	}
