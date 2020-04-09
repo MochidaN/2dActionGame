@@ -7,11 +7,11 @@
 const short ANIME_INTERVAL = 1000 / 30;//アニメーション間隔
 
 const short IMG_SIZE[static_cast<short>(CHARA_ID::NUM)] = { ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, PLAYER_SIZE };
-const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 1, 0, 0, 0, 1 };
+const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 0, 0, 0, 0, 1 };
 const short X = 0, Y = 1, W = 2, H = 3;
 const short g_playerMoveX = 2;
 const short g_playerStepX = 40;
-const short g_yAdd = -25;
+const short g_yAdd = -26;
 const short g_yAdd_ground = -1;
 
 //worldのサーフェイスにマップを描画
@@ -84,15 +84,16 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vec
 #endif 
 
 	SDL_Surface *worldSurface = SDL_CreateRGBSurface(0, WORLD_WIDTH * MAP_CHIPSIZE, WORLD_HEIGHT * MAP_CHIPSIZE, 32, 0, 0, 0, 0);
-	m_mapChip = IMG_Load(mapImgPath);
-	if (worldSurface == NULL || m_mapChip == NULL) {
+	SDL_Surface *mapChip = IMG_Load(mapImgPath);
+	if (worldSurface == NULL || mapChip == NULL) {
 		OutputError("failed to create world surface");
 	}
 	m_mapData = ReadFileSplit(mapDataPath, ',');
-	DrawWorld(renderer, worldSurface, m_mapChip, m_mapData);
+	DrawWorld(renderer, worldSurface, mapChip, m_mapData);
 	if ((m_world = SDL_CreateTextureFromSurface(renderer, worldSurface)) == NULL) {
 		OutputError("failed to create world texture");
 	}
+	SDL_FreeSurface(mapChip);
 
 	const int charaNum = static_cast<int>(CHARA_ID::NUM);
 	m_characterTexture = new SDL_Texture**[charaNum];
@@ -141,7 +142,6 @@ Game::~Game() {
 	}
 
 	SDL_DestroyTexture(m_world);
-	SDL_FreeSurface(m_mapChip);
 	const int charaNum = static_cast<int>(CHARA_ID::NUM);
 	vector<short> actionNum;
 	for (int id = 0, end = m_enemyAction.size(); id < end; id++) {
@@ -185,9 +185,6 @@ bool Game::Update(SDL_Renderer *renderer) {
 		if (m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground) {
 			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::JUMP));
 			m_chara[playerID][0]->SetState(CHARA_STATE::Y_ADD, g_yAdd);
-		}
-		else {
-			//cout << m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) << endl;
 		}
 		break;
 	}
@@ -284,7 +281,7 @@ void Game::Draw(SDL_Renderer *renderer) {
 			SDL_Rect srcChara = { frame[0] * IMG_SIZE[id], frame[1] * IMG_SIZE[id], IMG_SIZE[id], IMG_SIZE[id] };
 			SDL_Rect dstRect = m_chara[id][cn]->GetPos();
 			dstRect.x -= windowPosX;
-			if (m_chara[id][cn]->GetState(CHARA_STATE::DIR) == true) {//右向き
+			if (m_chara[id][cn]->GetState(CHARA_STATE::DIR) == g_right) {//右向き
 				SDL_RenderCopy(renderer, m_characterTexture[id][action], &srcChara, &dstRect);
 			}
 			else {//左
@@ -569,8 +566,6 @@ void CollisionX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vector
 				if (nowPos.x - prevX < 0) { x++; }
 				x *= MAP_CHIPSIZE;
 				nowPos.x = x;
-				
-				//nowPos.x = prevX;
 			}
 		}
 	}
@@ -590,12 +585,11 @@ bool CollisionY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vector
 	for (int w = left; w < right; w++) {
 		for (int h = top; h < bottom; h++) {
 			if (mapData[w][h] >= 1) {
-				cout << nowPos.y << "  " << prevY << endl;
 				int y = max(nowPos.y, prevY);
 				y /= MAP_CHIPSIZE;
 				y *= MAP_CHIPSIZE;
 				nowPos.y = y;
-				
+
 				landing = true;
 			}
 		}

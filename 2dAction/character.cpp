@@ -84,6 +84,8 @@ void Character::SetState(CHARA_STATE request, int state) {
 	}
 	case CHARA_STATE::ACTION: {
 		m_action = state;
+		m_vertical = 0;//コマ数リセット
+		m_heng = 0;
 		break;
 	}
 	case CHARA_STATE::X_ADD: {

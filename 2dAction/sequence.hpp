@@ -79,7 +79,6 @@ class Game : public Sequence {
 private:
 	SDL_Joystick *m_joystick;
 	SDL_Texture *m_world;
-	SDL_Surface *m_mapChip;
 	vector<vector<int>> m_mapData;
 	SDL_Texture ***m_characterTexture;
 
