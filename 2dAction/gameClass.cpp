@@ -1,61 +1,17 @@
 #include "stdafx.h"
 #include <algorithm>
 
-#include "sequence.hpp"
-#include "parameter.hpp"
+#include "gameClass.hpp"
 
-const short ANIME_INTERVAL = 1000 / 30;//アニメーション間隔
+const short ANIME_INTERVAL = 1000 / 10;//アニメーション間隔
 
 const short IMG_SIZE[static_cast<short>(CHARA_ID::NUM)] = { ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, PLAYER_SIZE };
-const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 0, 0, 0, 0, 1 };
+const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 0, 0, 0, 1, 1 };
 const short X = 0, Y = 1, W = 2, H = 3;
 const short g_playerMoveX = 2;
-const short g_playerStepX = 40;
+const short g_playerStepX = 20;
 const short g_yAdd = -26;
 const short g_yAdd_ground = -1;
-
-//worldのサーフェイスにマップを描画
-//SDL_Surface *world：ワールドサーフェイス
-// SDL_Surface *mapChip：マップチップサーフェイス
-//vector<vector<int>> mapData：マップの配置データ
-//返値：なし
-void DrawWorld(SDL_Renderer *renderer, SDL_Surface *world, SDL_Surface *mapChip, vector<vector<int>> mapData);
-
-//次のアニメーションフレームを計算
-//hengFrame：現在の横コマ数
-//verticalFrame：現在の縦コマ数
-//maxFrame：最大コマ数(0:横 1:縦)
-//endAnimation：アニメーションが一周したかどうか
-//返値：次のフレーム数
-vector<short> RetrunNextFrame(short hengFrame, short verticalFrame, vector<int> maxFrame, bool &endAnimation);
-
-//アクション名を配列番号に変換
-//actionList：アクション一覧
-//nowAction：現在のアクション
-template <typename T = ENEMY_ACTION> const int ActionToIndex(vector<T> actionList, int nowAction);
-
-//x座標の移動
-//nowPos：現在の座標(画像全体)
-//hurtRext：キャラの当たり判定
-//distance：移動距離
-//worldWidth：ワールドの端座標
-//mapData：マップ番号データ
-//返値：移動後の座標
-SDL_Rect MovePositionX(SDL_Rect nowPos, vector<int> hurtRect, int distance, int worldWidth, vector<vector<int>> mapData);
-
-//yAdd：y方向の移動量
-SDL_Rect MovePositionY(SDL_Rect nowPos, vector<int> hurtRect, short &yAdd, int worldHeight, vector<vector<int>> mapData);
-
-//キャラ当たり判定の座標を反転
-//rect：右向きの座標
-//imgWidth：画像の幅
-vector<int> FlipRect(vector<int> rect, int imgWidth);
-
-void CollisionX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vector<int>> mapData);
-
-//移動時の衝突判定
-//返値：地上にいるかどうか
-bool CollisionY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vector<int>> mapData);
 
 Sequence::Sequence() {
 	m_next = SEQ_ID::NONE;
@@ -126,7 +82,7 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vec
 		m_chara[id] = new Character*[CHARA_NUM[id]];
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
 			SDL_Rect pos = { 400, 0, IMG_SIZE[id], IMG_SIZE[id]};
-			m_chara[id][cn] = new Enemy(100, 10, 10, pos, action[id], time);
+			m_chara[id][cn] = new Enemy(100, 10, 10, pos, action[id], time, g_yAdd_ground);
 		}
 	}
 	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
@@ -168,6 +124,11 @@ bool Game::Update(SDL_Renderer *renderer) {
 
 	EVENT event = GetEvent(m_joystick);
 	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
+
+	//if (m_chara[playerID][0]->GetState(CHARA_STATE::ACTION) == static_cast<short>(PLAYER_ACTION::VERTICAL_ATTACK)) {
+		//cout << static_cast<int>(event) << endl;
+	//}
+
 	switch (event) {
 	case EVENT::QUIT: {
 		m_next = SEQ_ID::QUIT;
@@ -185,6 +146,32 @@ bool Game::Update(SDL_Renderer *renderer) {
 		if (m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground) {
 			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::JUMP));
 			m_chara[playerID][0]->SetState(CHARA_STATE::Y_ADD, g_yAdd);
+		}
+		break;
+	}
+	case EVENT::JOY_L1_DOWN: {
+		if (m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground) {
+			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::GUARD));
+			m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, 0);
+		}
+		break;
+	}
+	case EVENT::JOY_L1_UP: {
+		if (m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground) {
+			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::STAND));
+		}
+		break;
+	}
+	case EVENT::JOY_R1: {
+		if (m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground) {
+			if (m_chara[playerID][0]->GetState(CHARA_STATE::ACTION) == static_cast<short>(PLAYER_ACTION::VERTICAL_ATTACK)) {
+				m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::SIDE_ATTACK));
+				m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, 0);
+			}
+			else if (m_chara[playerID][0]->GetState(CHARA_STATE::ACTION) != static_cast<short>(PLAYER_ACTION::SIDE_ATTACK)) {
+				m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::VERTICAL_ATTACK));
+				m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, 0);
+			}
 		}
 		break;
 	}
@@ -222,10 +209,10 @@ bool Game::Update(SDL_Renderer *renderer) {
 		break;
 	}
 	}
-
+	/*
 	SDL_Rect pos = m_chara[playerID][0]->GetPos();
-	//const short action = m_chara[playerID][0]->GetState(CHARA_STATE::ACTION);
-	vector<int> hurtRect = m_hurtRect[1][m_chara[playerID][0]->GetState(CHARA_STATE::ACTION)][0];
+	const short act = m_chara[playerID][0]->GetState(CHARA_STATE::ACTION);
+	vector<int> hurtRect = m_hurtRect[1][act][ReturnFrameNum(m_maxFrame[1][act][0], *m_chara[playerID][0])];
 	if (m_chara[playerID][0]->GetState(CHARA_STATE::DIR) == g_left ) {//左向きの時反転
 		hurtRect = FlipRect(hurtRect, IMG_SIZE[playerID]);
 	}
@@ -234,9 +221,8 @@ bool Game::Update(SDL_Renderer *renderer) {
 	}
 	short yAdd = m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD);
 	m_chara[playerID][0]->SetPos(MovePositionY(pos, hurtRect, yAdd, WORLD_HEIGHT, m_mapData));
-	//m_hurtRect[1][action][0]　コマ数参照に変更する
 	m_chara[playerID][0]->SetState(CHARA_STATE::Y_ADD, yAdd);
-
+	*/
 	return true;
 }
 
@@ -253,22 +239,28 @@ void Game::Draw(SDL_Renderer *renderer) {
 	const short charaNum = static_cast<short>(CHARA_ID::NUM);
 	for (int id = 0; id < charaNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
+			const short charaType = id / (static_cast<int>(CHARA_ID::BOSS) + 1);
 			short action = m_chara[id][cn]->GetState(CHARA_STATE::ACTION);
+			short actionIndex = action;
 			if (id < static_cast<short>(CHARA_ID::BOSS)) {
-				action = ActionToIndex(m_enemyAction[id], action);
+				actionIndex = ActionToIndex(m_enemyAction[id], action);
 			}
+
 			vector<short> frame = { m_chara[id][cn]->GetState(CHARA_STATE::FRAME_H), m_chara[id][cn]->GetState(CHARA_STATE::FRAME_V) };
 			if (nowTime - m_chara[id][cn]->GetTime() >= ANIME_INTERVAL) {
 				//アニメーション更新
 				bool endAnimation = false;
-				frame = RetrunNextFrame(frame[0], frame[1], m_maxFrame[id][action], endAnimation);
-				if (endAnimation == true && m_chara[id][cn]->GetState(CHARA_STATE::ACTION) != static_cast<short>(ENEMY_ACTION::WALK)) {
-					if (id != 0) {
-						m_chara[id][cn]->SetState(CHARA_STATE::ACTION, 0);
-						m_chara[id][cn]->SetState(CHARA_STATE::X_ADD, 0);
+				frame = RetrunNextFrame(frame[0], frame[1], m_maxFrame[id][actionIndex], endAnimation);
+				const short walk[2] = { static_cast<short>(ENEMY_ACTION::WALK), static_cast<short>(PLAYER_ACTION::WALK) };
+				const short guard[2] = { static_cast<short>(ENEMY_ACTION::GUARD), static_cast<short>(PLAYER_ACTION::GUARD) };
+				const short dead[2] = { static_cast<short>(ENEMY_ACTION::DEAD), static_cast<short>(PLAYER_ACTION::DEAD) };
+				if ((endAnimation == true) && (action != walk[charaType]) && (action != guard[charaType]) && (action != dead[charaType])) {
+					if (id == 0) {
+						m_chara[id][cn]->SetState(CHARA_STATE::ACTION, static_cast<int>(ENEMY_ACTION::GUARD));
 					}
 					else {
-						m_chara[id][cn]->SetState(CHARA_STATE::ACTION, static_cast<int>(ENEMY_ACTION::GUARD));
+						m_chara[id][cn]->SetState(CHARA_STATE::ACTION, 0);
+						m_chara[id][cn]->SetState(CHARA_STATE::X_ADD, 0);
 					}
 				}
 
@@ -281,12 +273,23 @@ void Game::Draw(SDL_Renderer *renderer) {
 			SDL_Rect srcChara = { frame[0] * IMG_SIZE[id], frame[1] * IMG_SIZE[id], IMG_SIZE[id], IMG_SIZE[id] };
 			SDL_Rect dstRect = m_chara[id][cn]->GetPos();
 			dstRect.x -= windowPosX;
+
+			vector<int> hurtRect = m_hurtRect[charaType][action][ReturnFrameNum(m_maxFrame[charaType][action][0], *m_chara[id][cn])];
 			if (m_chara[id][cn]->GetState(CHARA_STATE::DIR) == g_right) {//右向き
 				SDL_RenderCopy(renderer, m_characterTexture[id][action], &srcChara, &dstRect);
 			}
 			else {//左
 				SDL_RenderCopyEx(renderer, m_characterTexture[id][action], &srcChara, &dstRect, 180, NULL, SDL_FLIP_VERTICAL);
+
+				hurtRect = FlipRect(hurtRect, IMG_SIZE[id]);//当たり判定反転
 			}
+			SDL_Rect pos = m_chara[id][cn]->GetPos();
+			if (m_chara[id][cn]->GetState(CHARA_STATE::X_ADD) > 0) {//x方向の移動があるとき
+				pos = MovePositionX(pos, hurtRect, m_chara[id][cn]->GetState(CHARA_STATE::X_ADD) * m_chara[id][cn]->GetState(CHARA_STATE::DIR), WORLD_WIDTH, m_mapData);
+			}
+			short yAdd = m_chara[id][cn]->GetState(CHARA_STATE::Y_ADD);
+			m_chara[id][cn]->SetPos(MovePositionY(pos, hurtRect, yAdd, WORLD_HEIGHT, m_mapData));
+			m_chara[id][cn]->SetState(CHARA_STATE::Y_ADD, yAdd);
 		}
 	}
 
@@ -324,7 +327,7 @@ EVENT GetEvent(SDL_Joystick *joystick) {
 			}
 			break;
 		case SDL_JOYBUTTONUP:
-			if ((int)event.jbutton.button == 10) {//L1
+			if ((int)event.jbutton.button == 9) {//L1
 				return EVENT::JOY_L1_UP;
 			}
 			else if ((int)event.jbutton.button == 13 || (int)event.jbutton.button == 14) {
@@ -596,4 +599,8 @@ bool CollisionY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vector
 	}
 
 	return landing;
+}
+
+inline int ReturnFrameNum(int maxFrameHeng, Character chara) {
+	return chara.GetState(CHARA_STATE::FRAME_V) * (--maxFrameHeng) + chara.GetState(CHARA_STATE::FRAME_H);
 }

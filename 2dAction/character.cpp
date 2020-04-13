@@ -8,7 +8,7 @@ Character::Character() {}
 Character::~Character() {
 }
 
-void Character::InitState(short dir, short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time) {
+void Character::InitState(short dir, short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd) {
 	m_dir = dir;
 	m_hp = hp;
 	m_power = power;
@@ -18,6 +18,7 @@ void Character::InitState(short dir, short hp, short power, short defense, SDL_R
 	m_heng = 0;
 	m_action = action;
 	m_xAdd = 0;
+	m_yAdd = yAdd;
 	m_prevTime = time;
 }
 
@@ -46,6 +47,9 @@ const short Character::GetState(CHARA_STATE request) {
 	}
 	case CHARA_STATE::X_ADD: {
 		return m_xAdd;
+	}
+	case CHARA_STATE::Y_ADD: {
+		return m_yAdd;
 	}
 	default: {
 		cout << "the state is invalid" << endl;
@@ -92,6 +96,10 @@ void Character::SetState(CHARA_STATE request, int state) {
 		m_xAdd = state;
 		break;;
 	}
+	case CHARA_STATE::Y_ADD: {
+		m_yAdd = state;
+		break;
+	}
 	default: {
 		cout << "the state is not exist" << endl;
 		break;
@@ -119,30 +127,25 @@ void Character::SetTime(unsigned int time) {
 }
 
 Player::Player(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd) {
-	Character::InitState(g_right, hp, power, defense, pos, action, time);
-	m_yAdd = yAdd;
+	Character::InitState(g_right, hp, power, defense, pos, action, time, yAdd);
 }
 
 const short Player::GetState(CHARA_STATE request) {
-	if (request == CHARA_STATE::Y_ADD) {
-		return m_yAdd;
-	}
 	return Character::GetState(request);
 }
 
 void Player::SetState(CHARA_STATE request, int state) {
-	if (request == CHARA_STATE::Y_ADD) {
-		m_yAdd = state;
-		return;
-	}
 	Character::SetState(request, state);
 }
 
-Enemy::Enemy(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time) {
-	Character::InitState(g_left, hp, power, defense, pos, action, time);
+Enemy::Enemy(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd) {
+	Character::InitState(g_left, hp, power, defense, pos, action, time, yAdd);
 }
 
-/*
 const short Enemy::GetState(CHARA_STATE request) {
 	return Character::GetState(request);
-}*/
+}
+
+void Enemy::SetState(CHARA_STATE request, int state) {
+	Character::SetState(request, state);
+}

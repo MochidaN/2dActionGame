@@ -27,6 +27,7 @@ private:
 	short m_heng;//現在のアニメーションコマ数(横)
 	short m_action;
 	short m_xAdd;//x方向移動量
+	short m_yAdd;//y方向移動量
 	unsigned int m_prevTime;//前回のアニメーション更新時間
 public:
 	Character();
@@ -56,12 +57,12 @@ public:
 
 protected:
 	//パラメータの初期化
-	void InitState(short dir, short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time);
+	void InitState(short dir, short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd);
 };
 
 class Player : public Character {
 private:
-	short m_yAdd;//y方向移動量
+	
 public:
 	Player(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd);
 	//~Player();
@@ -72,11 +73,11 @@ public:
 
 class Enemy : public Character {
 private:
-
+	
 public:
-	Enemy(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time);
+	Enemy(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd);
 	//~Enemy();
 
-	//const short GetState(CHARA_STATE request);
-	//void SetState(CHARA_STATE request, int state);
+	const short GetState(CHARA_STATE request) override;
+	void SetState(CHARA_STATE request, int state) override;
 };
