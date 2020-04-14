@@ -48,20 +48,32 @@ SDL_Rect MovePositionY(SDL_Rect nowPos, vector<int> hurtRect, short &yAdd, int w
 //imgWidth：画像の幅
 vector<int> FlipRect(vector<int> rect, int imgWidth);
 
-//移動時の衝突判定
+//移動時のマップとの衝突判定
 //nowPos：現在の座標(画像全体)
 //prevX：移動前のx座標
 //hurtRext：キャラの当たり判定
 //mapData：マップ番号データ
-void CollisionX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vector<int>> mapData);
+void CollisionMapX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vector<int>> mapData);
 
-//移動時の衝突判定
+//移動時のマップとの衝突判定
 //nowPos：現在の座標(画像全体)
 //prevY：移動前のy座標
 //hurtRext：キャラの当たり判定
 //mapData：マップ番号データ
 //返値：地上にいるかどうか
-bool CollisionY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vector<int>> mapData);
+bool CollisionMapY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vector<int>> mapData);
+
+//キャラクタの判定範囲を計算
+//pos：キャラ画像の左上座標
+//rect：キャラ矩形の相対座標
+//dir：向き
+//返値：計算後の座標
+SDL_Rect ReturnCharaRect(SDL_Rect pos, vector<int> rect, short dir);
+
+//矩形の当たり判定
+//引数:判定する2矩形
+//返値 true:衝突している false:していない
+bool DetectCollisionRect(SDL_Rect r0, SDL_Rect r1);
 
 //今のコマが通しで何コマ目か返す
 //maxFrameHeng：横のコマが最大いくつか

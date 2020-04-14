@@ -8,9 +8,9 @@ const short ANIME_INTERVAL = 1000 / 10;//アニメーション間隔
 const short IMG_SIZE[static_cast<short>(CHARA_ID::NUM)] = { ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, PLAYER_SIZE };
 const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 0, 0, 0, 1, 1 };
 const short X = 0, Y = 1, W = 2, H = 3;
-const short g_playerMoveX = 2;
+const short g_playerMoveX = 4;
 const short g_playerStepX = 20;
-const short g_yAdd = -26;
+const short g_yAdd = -28;
 const short g_yAdd_ground = -1;
 
 Sequence::Sequence() {
@@ -122,13 +122,41 @@ Game::~Game() {
 bool Game::Update(SDL_Renderer *renderer) {
 	Draw(renderer);
 
-	EVENT event = GetEvent(m_joystick);
 	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
+	const short act = m_chara[playerID][0]->GetState(CHARA_STATE::ACTION);
+	const short pNowFrame = ReturnFrameNum(m_maxFrame[playerID][act][0], *m_chara[playerID][0]);
+	SDL_Rect playerPos = ReturnCharaRect(m_chara[playerID][0]->GetPos(), m_hurtRect[1][act][pNowFrame], m_chara[playerID][0]->GetState(CHARA_STATE::DIR));
+	SDL_Rect pAtkRect = { -1, -1, -1, -1 };
+	if (m_chara[playerID][0]->GetActiveBit(CHARA_STATE::ATTACK_ACTIVE, pNowFrame) != 0) {
+		pAtkRect = ReturnCharaRect(m_chara[playerID][0]->GetPos(), m_attackRect[1][act][pNowFrame], m_chara[playerID][0]->GetState(CHARA_STATE::DIR));
+	}
 
-	//if (m_chara[playerID][0]->GetState(CHARA_STATE::ACTION) == static_cast<short>(PLAYER_ACTION::VERTICAL_ATTACK)) {
-		//cout << static_cast<int>(event) << endl;
-	//}
+	const int winWidth = WINDOW_WIDTH * MAP_CHIPSIZE;
+	int windowPosX = (m_chara[playerID][0]->GetPos().x + m_hurtRect[1][static_cast<short>(PLAYER_ACTION::STAND)][0][X]) - (WINDOW_WIDTH * MAP_CHIPSIZE / 2);//描画領域の左端
+	if (windowPosX < 0) { windowPosX = 0; }
+	else if (windowPosX + winWidth > WORLD_WIDTH * MAP_CHIPSIZE) { windowPosX = (WORLD_WIDTH - WINDOW_WIDTH) * MAP_CHIPSIZE; }
+	const short charaNum = static_cast<short>(CHARA_ID::NUM) - 1;
 
+	for (int id = 0; id < charaNum; id++) {
+		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
+			const short action = m_chara[id][cn]->GetState(CHARA_STATE::ACTION);
+			const short eNowFrame = ReturnFrameNum(m_maxFrame[id][action][0], *m_chara[id][cn]);
+			SDL_Rect enemyPos = ReturnCharaRect(m_chara[id][cn]->GetPos(), m_hurtRect[0][action][eNowFrame], m_chara[id][cn]->GetState(CHARA_STATE::DIR));
+			if ((windowPosX <= enemyPos.x + enemyPos.w) && (windowPosX + winWidth >= enemyPos.x)) {//ウィンドウ内にいる
+				if (DetectCollisionRect(playerPos, enemyPos) == true) {//プレイヤと敵がぶつかっている
+					SDL_Rect p = m_chara[playerID][0]->GetPos();
+					SDL_Rect e = m_chara[id][cn]->GetPos();
+					const short dst = g_playerMoveX / 2;
+					int pDst = (playerPos.x <= enemyPos.x) ? -dst : dst;
+					int eDst = (playerPos.x <= enemyPos.x) ? dst : -dst;
+					m_chara[playerID][0]->SetPos(MovePositionX(p, m_hurtRect[1][act][pNowFrame], pDst, WORLD_WIDTH, m_mapData));
+					m_chara[id][cn]->SetPos(MovePositionX(e, m_hurtRect[0][action][eNowFrame], eDst, WORLD_WIDTH, m_mapData));
+				}
+			}
+		}
+	}
+
+	EVENT event = GetEvent(m_joystick);
 	switch (event) {
 	case EVENT::QUIT: {
 		m_next = SEQ_ID::QUIT;
@@ -209,29 +237,13 @@ bool Game::Update(SDL_Renderer *renderer) {
 		break;
 	}
 	}
-	/*
-	SDL_Rect pos = m_chara[playerID][0]->GetPos();
-	const short act = m_chara[playerID][0]->GetState(CHARA_STATE::ACTION);
-	vector<int> hurtRect = m_hurtRect[1][act][ReturnFrameNum(m_maxFrame[1][act][0], *m_chara[playerID][0])];
-	if (m_chara[playerID][0]->GetState(CHARA_STATE::DIR) == g_left ) {//左向きの時反転
-		hurtRect = FlipRect(hurtRect, IMG_SIZE[playerID]);
-	}
-	if (m_chara[playerID][0]->GetState(CHARA_STATE::X_ADD) > 0) {
-		pos = MovePositionX(pos, hurtRect, m_chara[playerID][0]->GetState(CHARA_STATE::X_ADD) * m_chara[playerID][0]->GetState(CHARA_STATE::DIR), WORLD_WIDTH, m_mapData);
-	}
-	short yAdd = m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD);
-	m_chara[playerID][0]->SetPos(MovePositionY(pos, hurtRect, yAdd, WORLD_HEIGHT, m_mapData));
-	m_chara[playerID][0]->SetState(CHARA_STATE::Y_ADD, yAdd);
-	*/
 	return true;
 }
 
 void Game::Draw(SDL_Renderer *renderer) {
-	int windowPosX = (m_chara[static_cast<short>(CHARA_ID::PLAYER)][0]->GetPos().x + m_hurtRect[1][static_cast<short>(PLAYER_ACTION::STAND)][0][X]) - (WINDOW_WIDTH * MAP_CHIPSIZE / 2);
-	
+	int windowPosX = (m_chara[static_cast<short>(CHARA_ID::PLAYER)][0]->GetPos().x + m_hurtRect[1][static_cast<short>(PLAYER_ACTION::STAND)][0][X]) - (WINDOW_WIDTH * MAP_CHIPSIZE / 2);//描画領域の左端
 	if (windowPosX < 0) { windowPosX = 0; }
 	else if (windowPosX + WINDOW_WIDTH * MAP_CHIPSIZE > WORLD_WIDTH * MAP_CHIPSIZE) { windowPosX = (WORLD_WIDTH - WINDOW_WIDTH) * MAP_CHIPSIZE; }
-	
 	SDL_Rect src = { windowPosX, 0, WINDOW_WIDTH * MAP_CHIPSIZE, WINDOW_HEIGHT * MAP_CHIPSIZE };
 	SDL_RenderCopy(renderer, m_world, &src, NULL);
 
@@ -273,8 +285,8 @@ void Game::Draw(SDL_Renderer *renderer) {
 			SDL_Rect srcChara = { frame[0] * IMG_SIZE[id], frame[1] * IMG_SIZE[id], IMG_SIZE[id], IMG_SIZE[id] };
 			SDL_Rect dstRect = m_chara[id][cn]->GetPos();
 			dstRect.x -= windowPosX;
-
-			vector<int> hurtRect = m_hurtRect[charaType][action][ReturnFrameNum(m_maxFrame[charaType][action][0], *m_chara[id][cn])];
+			
+			vector<int> hurtRect = m_hurtRect[charaType][action][ReturnFrameNum(m_maxFrame[id][action][0], *m_chara[id][cn])];
 			if (m_chara[id][cn]->GetState(CHARA_STATE::DIR) == g_right) {//右向き
 				SDL_RenderCopy(renderer, m_characterTexture[id][action], &srcChara, &dstRect);
 			}
@@ -522,7 +534,7 @@ SDL_Rect MovePositionX(SDL_Rect nowPos, vector<int> hurtRect, int distance, int 
 		nowPos.x = worldWidth * MAP_CHIPSIZE - (hurtRect[X] + hurtRect[W]);
 	}
 	
-	CollisionX(nowPos, prevX, hurtRect, mapData);
+	CollisionMapX(nowPos, prevX, hurtRect, mapData);
 	return nowPos;
 }
 
@@ -539,7 +551,7 @@ SDL_Rect MovePositionY(SDL_Rect nowPos, vector<int> hurtRect, short &yAdd, int w
 		nowPos.y = worldHeight * MAP_CHIPSIZE - (hurtRect[Y] + hurtRect[H]);
 	}
 
-	if (CollisionY(nowPos, nowPos.y, hurtRect, mapData)) {
+	if (CollisionMapY(nowPos, nowPos.y, hurtRect, mapData)) {
 		yAdd = g_yAdd_ground;
 	}
 	
@@ -552,7 +564,7 @@ inline vector<int> FlipRect(vector<int> rect, int imgWidth) {
 }
 
 
-void CollisionX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vector<int>> mapData) {
+void CollisionMapX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vector<int>> mapData) {
 	const short left = (nowPos.x + hurtRect[X]) / MAP_CHIPSIZE;
 	short right = (nowPos.x + hurtRect[X] + hurtRect[W] + MAP_CHIPSIZE - 1) / MAP_CHIPSIZE;
 	if (right > WORLD_WIDTH) { right = WORLD_WIDTH; }
@@ -574,7 +586,7 @@ void CollisionX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vector
 	}
 }
 
-bool CollisionY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vector<int>> mapData) {
+bool CollisionMapY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vector<int>> mapData) {
 	bool landing = false;//着地したか否か
 	const short left = (nowPos.x + hurtRect[X]) / MAP_CHIPSIZE;
 	short right = (nowPos.x + hurtRect[X] + hurtRect[W] + MAP_CHIPSIZE - 1) / MAP_CHIPSIZE;
@@ -588,10 +600,10 @@ bool CollisionY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vector
 	for (int w = left; w < right; w++) {
 		for (int h = top; h < bottom; h++) {
 			if (mapData[w][h] >= 1) {
-				int y = max(nowPos.y, prevY);
+				int y = max(nowPos.y, prevY) + hurtRect[Y] + hurtRect[H];
 				y /= MAP_CHIPSIZE;
 				y *= MAP_CHIPSIZE;
-				nowPos.y = y;
+				nowPos.y = y - hurtRect[Y] - hurtRect[H];
 
 				landing = true;
 			}
@@ -601,6 +613,30 @@ bool CollisionY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vector
 	return landing;
 }
 
+SDL_Rect ReturnCharaRect(SDL_Rect pos, vector<int> rect, short dir) {
+	if (dir == g_left) { rect = FlipRect(rect, pos.w); }
+	pos.x += rect[X];
+	pos.y += rect[Y];
+	pos.w = rect[W];
+	pos.h = rect[H];
+
+	return pos;
+}
+
+bool DetectCollisionRect(SDL_Rect r0, SDL_Rect r1) {
+	int distanceX = abs((r0.x + (r0.w / 2)) - (r1.x + (r1.w / 2)));
+	int distanceY = abs((r0.y + (r0.h / 2)) - (r1.y + (r1.h / 2)));
+
+	return (distanceX < ((r0.w + r1.w) / 2) && distanceY < ((r0.h + r1.h) / 2)) ? true : false;
+	/*
+	if (distanceX < ((r0.w + r1.w) / 2) && distanceY < ((r0.h + r1.h) / 2)) {
+		return true;
+	}
+
+	return false;
+	*/
+}
+
 inline int ReturnFrameNum(int maxFrameHeng, Character chara) {
-	return chara.GetState(CHARA_STATE::FRAME_V) * (--maxFrameHeng) + chara.GetState(CHARA_STATE::FRAME_H);
+	return chara.GetState(CHARA_STATE::FRAME_V) * maxFrameHeng + chara.GetState(CHARA_STATE::FRAME_H);
 }

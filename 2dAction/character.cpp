@@ -126,26 +126,67 @@ void Character::SetTime(unsigned int time) {
 	m_prevTime = time;
 }
 
+const unsigned int Character::GetActiveBit(CHARA_STATE request, int frame) {
+	if (request == CHARA_STATE::HURT_ACTIVE) {
+		return m_hurtActive & (1 << frame);
+	}
+	else if(request == CHARA_STATE::ATTACK_ACTIVE) {
+		return m_attackActive & (1 << frame);
+	}
+	else {
+		cout << "the state is invalid" << endl;
+		return 0;
+	}
+}
+
+void Character::SetActiveBit(CHARA_STATE request, unsigned int bit) {
+	if (request == CHARA_STATE::HURT_ACTIVE) {
+		m_hurtActive = bit;
+	}
+	else if (request == CHARA_STATE::ATTACK_ACTIVE) {
+		m_attackActive = bit;
+	}
+	else {
+		cout << "the state is not exist" << endl;
+	}
+}
+
+
+
 Player::Player(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd) {
 	Character::InitState(g_right, hp, power, defense, pos, action, time, yAdd);
 }
-
+/*
 const short Player::GetState(CHARA_STATE request) {
 	return Character::GetState(request);
 }
 
 void Player::SetState(CHARA_STATE request, int state) {
 	Character::SetState(request, state);
-}
+}*/
+
+
 
 Enemy::Enemy(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd) {
 	Character::InitState(g_left, hp, power, defense, pos, action, time, yAdd);
+	m_inWindow = false;
 }
-
+/*
 const short Enemy::GetState(CHARA_STATE request) {
 	return Character::GetState(request);
 }
 
 void Enemy::SetState(CHARA_STATE request, int state) {
 	Character::SetState(request, state);
+}
+*/
+
+//このキャラクターがウィンドウ内にいるか返す
+const bool Enemy::GetInWindow() {
+	return m_inWindow;
+}
+
+//ウィンドウ内にいるかの状態更新
+void Enemy::SetInWindow(bool flag) {
+	m_inWindow = flag;
 }
