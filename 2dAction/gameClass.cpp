@@ -270,7 +270,7 @@ void Game::Draw(SDL_Renderer *renderer) {
 	for (int id = 0; id < charaNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
 
-			auto UpdateAnimation = [](SDL_Renderer *renderer, SDL_Texture **charaTexture, int id, Character &chara, vector<vector<int>> maxFrame, unsigned int nowTime, vector<vector<ENEMY_ACTION>> m_enemyAction, vector<vector<vector<vector<int>>>> hurtRect, vector<vector<int>> m_mapData, int windowPosX) {
+			auto UpdateAnimation = [renderer, id, nowTime, windowPosX](SDL_Texture **charaTexture, Character &chara, vector<vector<int>> maxFrame, vector<vector<ENEMY_ACTION>> m_enemyAction, vector<vector<vector<vector<int>>>> hurtRect, vector<vector<int>> m_mapData) {
 				const short charaType = id / (static_cast<int>(CHARA_ID::BOSS) + 1);
 				short action = chara.GetState(CHARA_STATE::ACTION);
 				short actionIndex = action;
@@ -324,10 +324,10 @@ void Game::Draw(SDL_Renderer *renderer) {
 			};
 
 			if (id == playerID) {
-				UpdateAnimation(renderer, m_characterTexture[id], id, *m_player, m_maxFrame[id], nowTime, m_enemyAction, m_hurtRect, m_mapData, windowPosX);
+				UpdateAnimation(m_characterTexture[id], *m_player, m_maxFrame[id], m_enemyAction, m_hurtRect, m_mapData);
 			}
 			else {
-				UpdateAnimation(renderer, m_characterTexture[id], id, *m_enemy[id][cn], m_maxFrame[id], nowTime, m_enemyAction, m_hurtRect, m_mapData, windowPosX);
+				UpdateAnimation(m_characterTexture[id], *m_enemy[id][cn], m_maxFrame[id], m_enemyAction, m_hurtRect, m_mapData);
 			}
 			
 			/*
