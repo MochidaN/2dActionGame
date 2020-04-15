@@ -4,6 +4,8 @@
 #include "mainLoop.hpp"
 #include "parameter.hpp"
 
+#include <bitset>
+
 using namespace std;
 
 void Init();
@@ -54,11 +56,13 @@ MainLoop::MainLoop() {
 	}
 
 	auto paramToBit = [](vector<vector<int>> num) {
+		//cout << num.size() << "  " << num[0][0] << "  " << num[0][1] << endl;
+
 		vector<unsigned int> flag;
 		for (auto i : num) {
 			if (i[0] < 0) {
 				flag.push_back(0);
-				break;
+				//break;
 			}
 			else {
 				unsigned short bit = 0;
@@ -70,6 +74,8 @@ MainLoop::MainLoop() {
 		}
 		return flag;
 	};
+
+	cout << endl << endl;
 	m_attackActive.push_back(paramToBit(ReadFileSplit(enemyAttackRect + attackActiveFile, ' ')));
 	m_attackActive.push_back(paramToBit(ReadFileSplit(filePath[static_cast<int>(CHARA_ID::PLAYER)] + attackActiveFile, ' ')));
 	m_hurtActive.push_back(paramToBit(ReadFileSplit(enemyHurtRect + hurtActiveFile, ' ')));

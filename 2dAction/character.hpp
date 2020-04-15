@@ -45,7 +45,7 @@ public:
 	//指定されたパラメータを設定する
 	//request：指定されたパラメータ名
 	//state：変更後の値
-	virtual void SetState(CHARA_STATE request, int state);
+	virtual void SetState(CHARA_STATE request, short state);
 
 	//現在の座標を返す
 	const SDL_Rect GetPos();

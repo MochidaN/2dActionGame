@@ -146,12 +146,26 @@ bool Game::Update(SDL_Renderer *renderer) {
 				if (DetectCollisionRect(playerPos, enemyPos) == true) {//ƒvƒŒƒCƒ„‚Æ“G‚ª‚Ô‚Â‚©‚Á‚Ä‚¢‚é
 					SDL_Rect p = m_chara[playerID][0]->GetPos();
 					SDL_Rect e = m_chara[id][cn]->GetPos();
-					const short dst = g_playerMoveX / 2;
+					const short dst = g_playerMoveX;
 					int pDst = (playerPos.x <= enemyPos.x) ? -dst : dst;
 					int eDst = (playerPos.x <= enemyPos.x) ? dst : -dst;
 					m_chara[playerID][0]->SetPos(MovePositionX(p, m_hurtRect[1][act][pNowFrame], pDst, WORLD_WIDTH, m_mapData));
 					m_chara[id][cn]->SetPos(MovePositionX(e, m_hurtRect[0][action][eNowFrame], eDst, WORLD_WIDTH, m_mapData));
 				}
+
+				if (pAtkRect.x != -1) {
+					if (DetectCollisionRect(pAtkRect, enemyPos) == true) {
+						m_chara[id][cn]->SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY_ACTION::HIT));
+						m_chara[playerID][0]->SetActiveBit(CHARA_STATE::ATTACK_ACTIVE, 0);//UŒ‚”»’è‚ð‚È‚­‚·
+					}
+				}
+				/*
+				if (m_chara[id][cn]->GetActiveBit(CHARA_STATE::ATTACK_ACTIVE, eNowFrame) != 0) {//“G‚Ìs“®‚ÉUŒ‚”»’è‚ª‚ ‚é
+					SDL_Rect eAtkRect = ReturnCharaRect(m_chara[id][cn]->GetPos(), m_attackRect[0][action][eNowFrame], m_chara[id][cn]->GetState(CHARA_STATE::DIR));
+					if (DetectCollisionRect(playerPos, eAtkRect) == true) {
+
+					}
+				}*/
 			}
 		}
 	}
@@ -165,46 +179,48 @@ bool Game::Update(SDL_Renderer *renderer) {
 	}
 	case EVENT::JOY_CIRCLE: {
 		if (m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground) {
-			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::STEP));
+			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER_ACTION::STEP));
 			m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, g_playerStepX);
 		}
 		break;
 	}
 	case EVENT::JOY_CROSS: {
 		if (m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground) {
-			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::JUMP));
+			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER_ACTION::JUMP));
 			m_chara[playerID][0]->SetState(CHARA_STATE::Y_ADD, g_yAdd);
 		}
 		break;
 	}
 	case EVENT::JOY_L1_DOWN: {
 		if (m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground) {
-			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::GUARD));
+			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER_ACTION::GUARD));
 			m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, 0);
 		}
 		break;
 	}
 	case EVENT::JOY_L1_UP: {
 		if (m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground) {
-			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::STAND));
+			m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER_ACTION::STAND));
 		}
 		break;
 	}
 	case EVENT::JOY_R1: {
 		if (m_chara[playerID][0]->GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground) {
 			if (m_chara[playerID][0]->GetState(CHARA_STATE::ACTION) == static_cast<short>(PLAYER_ACTION::VERTICAL_ATTACK)) {
-				m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::SIDE_ATTACK));
+				m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER_ACTION::SIDE_ATTACK));
+				m_chara[playerID][0]->SetActiveBit(CHARA_STATE::ATTACK_ACTIVE, m_attackActive[1][static_cast<short>(PLAYER_ACTION::SIDE_ATTACK)]);
 				m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, 0);
 			}
 			else if (m_chara[playerID][0]->GetState(CHARA_STATE::ACTION) != static_cast<short>(PLAYER_ACTION::SIDE_ATTACK)) {
-				m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::VERTICAL_ATTACK));
+				m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER_ACTION::VERTICAL_ATTACK));
+				m_chara[playerID][0]->SetActiveBit(CHARA_STATE::ATTACK_ACTIVE, m_attackActive[1][static_cast<short>(PLAYER_ACTION::VERTICAL_ATTACK)]);
 				m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, 0);
 			}
 		}
 		break;
 	}
 	case EVENT::JOY_HAT_LEFT: {
-		m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::WALK));
+		m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER_ACTION::WALK));
 		m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, g_playerMoveX);
 		
 		if (m_chara[playerID][0]->GetState(CHARA_STATE::DIR) == g_right) {//‰EŒü‚«‚©‚ç¶Œü‚«‚É‚È‚é‚Æ‚«
@@ -218,7 +234,7 @@ bool Game::Update(SDL_Renderer *renderer) {
 		break;
 	}
 	case EVENT::JOY_HAT_RIGHT: {
-		m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::WALK));
+		m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER_ACTION::WALK));
 		m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, g_playerMoveX);
 
 		if (m_chara[playerID][0]->GetState(CHARA_STATE::DIR) == g_left) {//¶Œü‚«‚©‚ç‰EŒü‚«‚É‚È‚é‚Æ‚«
@@ -233,7 +249,7 @@ bool Game::Update(SDL_Renderer *renderer) {
 	}
 	case EVENT::JOY_HAT_CENTERED: {
 		m_chara[playerID][0]->SetState(CHARA_STATE::X_ADD, 0);
-		m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<int>(PLAYER_ACTION::STAND));
+		m_chara[playerID][0]->SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER_ACTION::STAND));
 		break;
 	}
 	}
@@ -268,7 +284,7 @@ void Game::Draw(SDL_Renderer *renderer) {
 				const short dead[2] = { static_cast<short>(ENEMY_ACTION::DEAD), static_cast<short>(PLAYER_ACTION::DEAD) };
 				if ((endAnimation == true) && (action != walk[charaType]) && (action != guard[charaType]) && (action != dead[charaType])) {
 					if (id == 0) {
-						m_chara[id][cn]->SetState(CHARA_STATE::ACTION, static_cast<int>(ENEMY_ACTION::GUARD));
+						m_chara[id][cn]->SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY_ACTION::GUARD));
 					}
 					else {
 						m_chara[id][cn]->SetState(CHARA_STATE::ACTION, 0);
@@ -456,7 +472,6 @@ vector<int> split(string str, const char mark) {
 	while (getline(ss, buf, mark)) {
 		data.push_back(atoi(buf.c_str()));
 	}
-
 	return data;
 }
 
@@ -469,11 +484,9 @@ vector<vector<int>> ReadFileSplit(string fileName, const char mark) {
 
 	string str;
 	vector<vector<int>> data;
-
 	while (getline(ifs, str)) {
 		data.push_back(split(str, mark));
 	}
-
 	return data;
 }
 
@@ -628,13 +641,6 @@ bool DetectCollisionRect(SDL_Rect r0, SDL_Rect r1) {
 	int distanceY = abs((r0.y + (r0.h / 2)) - (r1.y + (r1.h / 2)));
 
 	return (distanceX < ((r0.w + r1.w) / 2) && distanceY < ((r0.h + r1.h) / 2)) ? true : false;
-	/*
-	if (distanceX < ((r0.w + r1.w) / 2) && distanceY < ((r0.h + r1.h) / 2)) {
-		return true;
-	}
-
-	return false;
-	*/
 }
 
 inline int ReturnFrameNum(int maxFrameHeng, Character chara) {

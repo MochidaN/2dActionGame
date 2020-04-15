@@ -1,14 +1,14 @@
--1 //stand.png
--1 //walk.png
--1 //hit.png
--1 //down.png
--1 //dead.png
--1 //guard.png
-3 4 //punch.png
--1 //dive.png
-0 1 2 3 //jump_out.png
-2 3 4 5 6 //ramming.png
-6 7 //spin_kick_front.png
-3 4 //spin_kick_back.png
-4 5 6 7 //h_punch.png
-2 3 5 6 10 11 12 //punch_combo.png
+-1//stand.png
+-1//walk.png
+-1//hit.png
+-1//down.png
+-1//dead.png
+-1//guard.png
+3 4//punch.png
+-1//dive.png
+0 1 2 3//jump_out.png
+2 3 4 5 6//ramming.png
+6 7//spin_kick_front.png
+3 4//spin_kick_back.png
+4 5 6 7//h_punch.png
+2 3 5 6 10 11 12//punch_combo.png

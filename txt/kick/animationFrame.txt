@@ -1,8 +1,8 @@
-3 2 //stand.png
-4 2 //walk.png
-4 2 //hit.png
-13 1 //down.png
-1 1 //dead.png
-7 1 //ramming.png
-7 2 //spin_kick_front.png
-5 2 //spin_kick_back.png
+3 2//stand.png
+4 2//walk.png
+4 2//hit.png
+13 1//down.png
+1 1//dead.png
+7 1//ramming.png
+7 2//spin_kick_front.png
+5 2//spin_kick_back.png

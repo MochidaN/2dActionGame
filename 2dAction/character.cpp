@@ -20,6 +20,8 @@ void Character::InitState(short dir, short hp, short power, short defense, SDL_R
 	m_xAdd = 0;
 	m_yAdd = yAdd;
 	m_prevTime = time;
+	m_hurtActive = 0;
+	m_attackActive = 0;
 }
 
 const short Character::GetState(CHARA_STATE request) {
@@ -58,7 +60,7 @@ const short Character::GetState(CHARA_STATE request) {
 	}
 }
 
-void Character::SetState(CHARA_STATE request, int state) {
+void Character::SetState(CHARA_STATE request, short state) {
 	switch (request) {
 	case CHARA_STATE::DIR: {
 		if (state == g_right || state == g_left) {
