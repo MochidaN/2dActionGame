@@ -56,8 +56,6 @@ MainLoop::MainLoop() {
 	}
 
 	auto paramToBit = [](vector<vector<int>> num) {
-		//cout << num.size() << "  " << num[0][0] << "  " << num[0][1] << endl;
-
 		vector<unsigned int> flag;
 		for (auto i : num) {
 			if (i[0] < 0) {

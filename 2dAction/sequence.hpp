@@ -89,7 +89,9 @@ private:
 	vector<vector<unsigned int>> m_hurtActive;//‚­‚ç‚¢”»’è‚Ì‚ ‚éƒtƒŒ[ƒ€
 	vector<vector<vector<vector<int>>>> m_hurtRect;//‚­‚ç‚¢”»’è”ÍˆÍ
 
-	Character **m_chara[static_cast<int>(CHARA_ID::NUM)];
+	Player *m_player;
+	Enemy **m_enemy[static_cast<int>(CHARA_ID::NUM) - 1];
+	//Character **m_chara[static_cast<int>(CHARA_ID::NUM)];
 public :
 	Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vector<vector<vector<int>>> maxFrame, vector<vector<unsigned int>> attackActive, vector<vector<vector<vector<int>>>> attackRect, vector<vector<unsigned int>> hurtActive, vector<vector<vector<vector<int>>>> hurtRect);
 	~Game();
