@@ -23,7 +23,7 @@ MainLoop::MainLoop() {
 	}
 
 	//GUARD,WARP,KICK
-	vector<vector<ENEMY_ACTION>> action{ {ENEMY_ACTION::WALK, ENEMY_ACTION::HIT, ENEMY_ACTION::DOWN, ENEMY_ACTION::DEAD, ENEMY_ACTION::GUARD, ENEMY_ACTION::PUNCH}, {ENEMY_ACTION::STAND, ENEMY_ACTION::HIT, ENEMY_ACTION::DOWN, ENEMY_ACTION::DEAD, ENEMY_ACTION::DIVE, ENEMY_ACTION::JUMP_OUT}, { ENEMY_ACTION::STAND, ENEMY_ACTION::HIT, ENEMY_ACTION::DOWN, ENEMY_ACTION::DEAD, ENEMY_ACTION::RAMMING, ENEMY_ACTION::KICK_FRONT, ENEMY_ACTION::KICK_BACK} };
+	vector<vector<ENEMY::ACTION>> action{ {ENEMY::ACTION::WALK, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::GUARD, ENEMY::ACTION::PUNCH}, {ENEMY::ACTION::STAND, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::DIVE, ENEMY::ACTION::JUMP_OUT}, { ENEMY::ACTION::STAND, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::RAMMING, ENEMY::ACTION::KICK_FRONT, ENEMY::ACTION::KICK_BACK} };
 	const short actionSize = action.size();
 	m_enemyAction.resize(actionSize);
 	for (int i = 0; i < actionSize; i++) {
@@ -60,7 +60,6 @@ MainLoop::MainLoop() {
 		for (auto i : num) {
 			if (i[0] < 0) {
 				flag.push_back(0);
-				//break;
 			}
 			else {
 				unsigned short bit = 0;
@@ -72,8 +71,7 @@ MainLoop::MainLoop() {
 		}
 		return flag;
 	};
-
-	cout << endl << endl;
+	
 	m_attackActive.push_back(paramToBit(ReadFileSplit(enemyAttackRect + attackActiveFile, ' ')));
 	m_attackActive.push_back(paramToBit(ReadFileSplit(filePath[static_cast<int>(CHARA_ID::PLAYER)] + attackActiveFile, ' ')));
 	m_hurtActive.push_back(paramToBit(ReadFileSplit(enemyHurtRect + hurtActiveFile, ' ')));

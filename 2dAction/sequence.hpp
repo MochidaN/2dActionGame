@@ -1,7 +1,5 @@
 #pragma once
-#include "character.hpp"
-
-using namespace std;
+#include "enemy.hpp"
 
 //各シーケンスの値
 enum class SEQ_ID {
@@ -19,24 +17,6 @@ enum class CHARA_ID {
 	KICK,
 	BOSS,
 	PLAYER,
-	NUM
-};
-
-enum class ENEMY_ACTION {
-	STAND,
-	WALK,
-	HIT,
-	DOWN,
-	DEAD,
-	GUARD,
-	PUNCH,
-	DIVE,
-	JUMP_OUT,
-	RAMMING,
-	KICK_FRONT,
-	KICK_BACK,
-	HARD_PUNCH,
-	COMBO_PUNCH,
 	NUM
 };
 
@@ -82,7 +62,7 @@ private:
 	vector<vector<int>> m_mapData;
 	SDL_Texture ***m_characterTexture;
 
-	vector<vector<ENEMY_ACTION>> m_enemyAction;//各敵が持つアクション
+	vector<vector<ENEMY::ACTION>> m_enemyAction;//各敵が持つアクション
 	vector<vector<vector<int>>> m_maxFrame;//各アニメーションのフレーム数
 	vector<vector<unsigned int>> m_attackActive;//攻撃判定のあるフレーム
 	vector<vector<vector<vector<int>>>> m_attackRect;//攻撃判定範囲
@@ -93,11 +73,11 @@ private:
 	Enemy **m_enemy[static_cast<int>(CHARA_ID::NUM) - 1];
 	//Character **m_chara[static_cast<int>(CHARA_ID::NUM)];
 public :
-	Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vector<vector<vector<int>>> maxFrame, vector<vector<unsigned int>> attackActive, vector<vector<vector<vector<int>>>> attackRect, vector<vector<unsigned int>> hurtActive, vector<vector<vector<vector<int>>>> hurtRect);
+	Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, vector<vector<vector<int>>> maxFrame, vector<vector<unsigned int>> attackActive, vector<vector<vector<vector<int>>>> attackRect, vector<vector<unsigned int>> hurtActive, vector<vector<vector<vector<int>>>> hurtRect);
 	~Game();
 
 	bool Update(SDL_Renderer *renderer);
-	void Draw(SDL_Renderer *renderer);
+	void Draw(SDL_Renderer *renderer, int windowPosX);
 };
 
 enum class EVENT {

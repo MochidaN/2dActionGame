@@ -4,7 +4,9 @@ using namespace std;
 //#include "font.hpp"
 
 class Sequence;
-enum class ENEMY_ACTION;
+namespace ENEMY {
+	enum class ACTION;
+}
 
 class MainLoop {
 private:
@@ -12,7 +14,7 @@ private:
 	SDL_Renderer *m_renderer;
 	Sequence *m_sequence;//シーケンス遷移用
 	SDL_Texture *m_loadingText;//ロード画面用文字
-	vector<vector<ENEMY_ACTION>> m_enemyAction;//各敵が持つアクション
+	vector<vector<ENEMY::ACTION>> m_enemyAction;//各敵が持つアクション
 	vector<vector<vector<int>>> m_maxFrame;//各アニメーションのフレーム数
 	vector<vector<unsigned int>> m_attackActive;//攻撃判定のあるフレーム
 	vector<vector<vector<vector<int>>>> m_attackRect;//攻撃判定範囲
@@ -20,8 +22,6 @@ private:
 	vector<vector<vector<vector<int>>>> m_hurtRect;//くらい判定範囲
 
 public:
-	//SDL_Texture* m_backgroundTexture;
-
 	MainLoop();
 	~MainLoop();
 

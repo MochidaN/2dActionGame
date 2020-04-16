@@ -12,14 +12,6 @@
 //返値：なし
 void DrawWorld(SDL_Renderer *renderer, SDL_Surface *world, SDL_Surface *mapChip, vector<vector<int>> mapData);
 
-//次のアニメーションフレームを計算
-//hengFrame：現在の横コマ数
-//verticalFrame：現在の縦コマ数
-//maxFrame：最大コマ数(0:横 1:縦)
-//endAnimation：アニメーションが一周したかどうか
-//返値：次のフレーム数
-vector<short> RetrunNextFrame(short hengFrame, short verticalFrame, vector<int> maxFrame, bool &endAnimation);
-
 //アクション名を配列番号に変換
 //actionList：アクション一覧
 //nowAction：現在のアクション

@@ -1,4 +1,5 @@
 #pragma once
+#include <SDL.h>
 
 const short g_right = 1;
 const short g_left = -1;
@@ -86,23 +87,4 @@ public:
 
 	//const short GetState(CHARA_STATE request) override;
 	//void SetState(CHARA_STATE request, int state) override;
-};
-
-
-
-class Enemy : public Character {
-private:
-	bool m_inWindow;
-public:
-	Enemy(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd);
-	//~Enemy();
-
-	//const short GetState(CHARA_STATE request) override;
-	//void SetState(CHARA_STATE request, int state) override;
-
-	//このキャラクターがウィンドウ内にいるか返す
-	const bool GetInWindow();
-
-	//ウィンドウ内にいるかの状態更新
-	void SetInWindow(bool flag);
 };

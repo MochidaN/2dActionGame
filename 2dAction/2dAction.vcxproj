@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="character.hpp" />
+    <ClInclude Include="enemy.hpp" />
     <ClInclude Include="gameClass.hpp" />
     <ClInclude Include="mainLoop.hpp" />
     <ClInclude Include="parameter.hpp" />
@@ -158,6 +159,7 @@
   <ItemGroup>
     <ClCompile Include="2dAction.cpp" />
     <ClCompile Include="character.cpp" />
+    <ClCompile Include="enemy.cpp" />
     <ClCompile Include="gameClass.cpp" />
     <ClCompile Include="mainLoop.cpp" />
     <ClCompile Include="stdafx.cpp">

@@ -21,7 +21,7 @@ SEQ_ID Sequence::MoveTo() {
 	return m_next;
 }
 
-Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vector<vector<vector<int>>> maxFrame, vector<vector<unsigned int>> attackActive, vector<vector<vector<vector<int>>>> attackRect, vector<vector<unsigned int>> hurtActive, vector<vector<vector<vector<int>>>> hurtRect) {
+Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, vector<vector<vector<int>>> maxFrame, vector<vector<unsigned int>> attackActive, vector<vector<vector<vector<int>>>> attackRect, vector<vector<unsigned int>> hurtActive, vector<vector<vector<vector<int>>>> hurtRect) {
 	m_joystick = SDL_JoystickOpen(0);//ジョイスティックを構造体に割り当てて有効化
 	if (!SDL_JoystickGetAttached(m_joystick)) {
 		cout << "failed to open joystick" << endl;
@@ -76,7 +76,7 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY_ACTION>> enemyAction, vec
 	m_hurtRect = hurtRect;
 
 	const short enemyNum = static_cast<short>(CHARA_ID::NUM) - 1;
-	const short action[static_cast<short>(CHARA_ID::NUM)-1] = { static_cast<short>(ENEMY_ACTION::GUARD), static_cast<short>(ENEMY_ACTION::STAND),  static_cast<short>(ENEMY_ACTION::STAND),  static_cast<short>(ENEMY_ACTION::STAND)};
+	const short action[static_cast<short>(CHARA_ID::NUM)-1] = { static_cast<short>(ENEMY::ACTION::GUARD), static_cast<short>(ENEMY::ACTION::STAND),  static_cast<short>(ENEMY::ACTION::STAND),  static_cast<short>(ENEMY::ACTION::STAND)};
 	unsigned int time = SDL_GetTicks();
 	for (int id = 0; id < enemyNum; id++) {
 		m_enemy[id] = new Enemy*[CHARA_NUM[id]];
@@ -102,7 +102,7 @@ Game::~Game() {
 	for (int id = 0, end = m_enemyAction.size(); id < end; id++) {
 		actionNum.push_back(m_enemyAction[id].size());
 	}
-	actionNum.push_back(static_cast<short>(ENEMY_ACTION::NUM));
+	actionNum.push_back(static_cast<short>(ENEMY::ACTION::NUM));
 	actionNum.push_back(static_cast<short>(PLAYER_ACTION::NUM));
 
 	for (int id = 0; id < charaNum - 1; id++) {
@@ -121,7 +121,12 @@ Game::~Game() {
 }
 
 bool Game::Update(SDL_Renderer *renderer) {
-	Draw(renderer);
+	const int winWidth = WINDOW_WIDTH * MAP_CHIPSIZE;
+	int windowPosX = (m_player->GetPos().x + m_hurtRect[1][static_cast<short>(PLAYER_ACTION::STAND)][0][X]) - (WINDOW_WIDTH * MAP_CHIPSIZE / 2);//描画領域の左端
+	if (windowPosX < 0) { windowPosX = 0; }
+	else if (windowPosX + winWidth > WORLD_WIDTH * MAP_CHIPSIZE) { windowPosX = (WORLD_WIDTH - WINDOW_WIDTH) * MAP_CHIPSIZE; }
+
+	Draw(renderer, windowPosX);
 
 	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
 	const short act = m_player->GetState(CHARA_STATE::ACTION);
@@ -132,18 +137,34 @@ bool Game::Update(SDL_Renderer *renderer) {
 		pAtkRect = ReturnCharaRect(m_player->GetPos(), m_attackRect[1][act][pNowFrame], m_player->GetState(CHARA_STATE::DIR));
 	}
 
-	const int winWidth = WINDOW_WIDTH * MAP_CHIPSIZE;
-	int windowPosX = (m_player->GetPos().x + m_hurtRect[1][static_cast<short>(PLAYER_ACTION::STAND)][0][X]) - (WINDOW_WIDTH * MAP_CHIPSIZE / 2);//描画領域の左端
-	if (windowPosX < 0) { windowPosX = 0; }
-	else if (windowPosX + winWidth > WORLD_WIDTH * MAP_CHIPSIZE) { windowPosX = (WORLD_WIDTH - WINDOW_WIDTH) * MAP_CHIPSIZE; }
-	const short charaNum = static_cast<short>(CHARA_ID::NUM) - 1;
+#ifdef _DEBUG
+	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+	SDL_Rect dst = playerPos;
+	dst.x -= windowPosX;
+	SDL_RenderDrawRect(renderer, &dst);
+	if (pAtkRect.x >= 0) {
+		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+		dst = pAtkRect;
+		dst.x -= windowPosX;
+		SDL_RenderDrawRect(renderer, &dst);
+	}
+#endif
 
+	const short charaNum = static_cast<short>(CHARA_ID::NUM) - 1;
 	for (int id = 0; id < charaNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
 			const short action = m_enemy[id][cn]->GetState(CHARA_STATE::ACTION);
 			const short eNowFrame = ReturnFrameNum(m_maxFrame[id][action][0], *m_enemy[id][cn]);
 			SDL_Rect enemyPos = ReturnCharaRect(m_enemy[id][cn]->GetPos(), m_hurtRect[0][action][eNowFrame], m_enemy[id][cn]->GetState(CHARA_STATE::DIR));
 			if ((windowPosX <= enemyPos.x + enemyPos.w) && (windowPosX + winWidth >= enemyPos.x)) {//ウィンドウ内にいる
+
+#ifdef _DEBUG
+				SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+				SDL_Rect dst = enemyPos;
+				dst.x -= windowPosX;
+				SDL_RenderDrawRect(renderer, &dst);
+#endif
+
 				if (DetectCollisionRect(playerPos, enemyPos) == true) {//プレイヤと敵がぶつかっている
 					SDL_Rect p = m_player->GetPos();
 					SDL_Rect e = m_enemy[id][cn]->GetPos();
@@ -156,17 +177,23 @@ bool Game::Update(SDL_Renderer *renderer) {
 
 				if (pAtkRect.x != -1) {
 					if (DetectCollisionRect(pAtkRect, enemyPos) == true) {
-						m_enemy[id][cn]->SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY_ACTION::HIT));
+						m_enemy[id][cn]->SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::HIT));
 						m_player->SetActiveBit(CHARA_STATE::ATTACK_ACTIVE, 0);//攻撃判定をなくす
 					}
 				}
-				/*
+				
 				if (m_enemy[id][cn]->GetActiveBit(CHARA_STATE::ATTACK_ACTIVE, eNowFrame) != 0) {//敵の行動に攻撃判定がある
 					SDL_Rect eAtkRect = ReturnCharaRect(m_enemy[id][cn]->GetPos(), m_attackRect[0][action][eNowFrame], m_enemy[id][cn]->GetState(CHARA_STATE::DIR));
 					if (DetectCollisionRect(playerPos, eAtkRect) == true) {
 
 					}
-				}*/
+#ifdef _DEBUG
+					SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+					SDL_Rect dst = eAtkRect;
+					dst.x -= windowPosX;
+					SDL_RenderDrawRect(renderer, &dst);
+#endif
+				}
 			}
 		}
 	}
@@ -257,10 +284,7 @@ bool Game::Update(SDL_Renderer *renderer) {
 	return true;
 }
 
-void Game::Draw(SDL_Renderer *renderer) {
-	int windowPosX = (m_player->GetPos().x + m_hurtRect[1][static_cast<short>(PLAYER_ACTION::STAND)][0][X]) - (WINDOW_WIDTH * MAP_CHIPSIZE / 2);//描画領域の左端
-	if (windowPosX < 0) { windowPosX = 0; }
-	else if (windowPosX + WINDOW_WIDTH * MAP_CHIPSIZE > WORLD_WIDTH * MAP_CHIPSIZE) { windowPosX = (WORLD_WIDTH - WINDOW_WIDTH) * MAP_CHIPSIZE; }
+void Game::Draw(SDL_Renderer *renderer, int windowPosX) {
 	SDL_Rect src = { windowPosX, 0, WINDOW_WIDTH * MAP_CHIPSIZE, WINDOW_HEIGHT * MAP_CHIPSIZE };
 	SDL_RenderCopy(renderer, m_world, &src, NULL);
 
@@ -269,27 +293,24 @@ void Game::Draw(SDL_Renderer *renderer) {
 	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
 	for (int id = 0; id < charaNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
-
-			auto UpdateAnimation = [renderer, id, nowTime, windowPosX](SDL_Texture **charaTexture, Character &chara, vector<vector<int>> maxFrame, vector<vector<ENEMY_ACTION>> m_enemyAction, vector<vector<vector<vector<int>>>> hurtRect, vector<vector<int>> m_mapData) {
+			auto UpdateAnimation = [renderer, id, nowTime, windowPosX](SDL_Texture **charaTexture, Character &chara, vector<vector<int>> maxFrame, vector<vector<ENEMY::ACTION>> m_enemyAction, vector<vector<vector<vector<int>>>> hurtRect, vector<vector<int>> m_mapData) {
 				const short charaType = id / (static_cast<int>(CHARA_ID::BOSS) + 1);
 				short action = chara.GetState(CHARA_STATE::ACTION);
 				short actionIndex = action;
-				if (id < static_cast<short>(CHARA_ID::BOSS)) {
-					actionIndex = ActionToIndex(m_enemyAction[id], action);
-				}
+				if (id < static_cast<short>(CHARA_ID::BOSS)) { actionIndex = ActionToIndex(m_enemyAction[id], action); }
 
 				vector<short> frame = { chara.GetState(CHARA_STATE::FRAME_H), chara.GetState(CHARA_STATE::FRAME_V) };
 				if (nowTime - chara.GetTime() >= ANIME_INTERVAL) {
 					//アニメーション更新
 					bool endAnimation = false;
-					frame = RetrunNextFrame(frame[0], frame[1], maxFrame[actionIndex], endAnimation);
-					const short walk[2] = { static_cast<short>(ENEMY_ACTION::WALK), static_cast<short>(PLAYER_ACTION::WALK) };
-					const short guard[2] = { static_cast<short>(ENEMY_ACTION::GUARD), static_cast<short>(PLAYER_ACTION::GUARD) };
-					const short dead[2] = { static_cast<short>(ENEMY_ACTION::DEAD), static_cast<short>(PLAYER_ACTION::DEAD) };
+					frame = ReturnNextFrame(frame[0], frame[1], maxFrame[actionIndex], endAnimation);
+					const short walk[2] = { static_cast<short>(ENEMY::ACTION::WALK), static_cast<short>(PLAYER_ACTION::WALK) };
+					const short guard[2] = { static_cast<short>(ENEMY::ACTION::GUARD), static_cast<short>(PLAYER_ACTION::GUARD) };
+					const short dead[2] = { static_cast<short>(ENEMY::ACTION::DEAD), static_cast<short>(PLAYER_ACTION::DEAD) };
 
 					if ((endAnimation == true) && (action != walk[charaType]) && (action != guard[charaType]) && (action != dead[charaType])) {
 						if (id == 0) {
-							chara.SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY_ACTION::GUARD));
+							chara.SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::GUARD));
 						}
 						else {
 							chara.SetState(CHARA_STATE::ACTION, 0);
@@ -300,7 +321,6 @@ void Game::Draw(SDL_Renderer *renderer) {
 					chara.SetState(CHARA_STATE::FRAME_V, frame[1]);
 					chara.SetTime(nowTime);
 				}
-
 				SDL_Rect srcChara = { frame[0] * IMG_SIZE[id], frame[1] * IMG_SIZE[id], IMG_SIZE[id], IMG_SIZE[id] };
 				SDL_Rect dstRect = chara.GetPos();
 				dstRect.x -= windowPosX;
@@ -311,9 +331,9 @@ void Game::Draw(SDL_Renderer *renderer) {
 				}
 				else {//左
 					SDL_RenderCopyEx(renderer, charaTexture[action], &srcChara, &dstRect, 180, NULL, SDL_FLIP_VERTICAL);
-
 					hRect = FlipRect(hRect, IMG_SIZE[id]);//当たり判定反転
 				}
+
 				SDL_Rect pos = chara.GetPos();
 				if (chara.GetState(CHARA_STATE::X_ADD) > 0) {//x方向の移動があるとき
 					pos = MovePositionX(pos, hRect, chara.GetState(CHARA_STATE::X_ADD) * chara.GetState(CHARA_STATE::DIR), WORLD_WIDTH, m_mapData);
@@ -560,20 +580,6 @@ void DrawWorld(SDL_Renderer *renderer, SDL_Surface *world, SDL_Surface *mapChip,
 	}
 }
 
-vector<short> RetrunNextFrame(short hengFrame, short verticalFrame, vector<int> maxFrame, bool &endAnimation) {
-	endAnimation = false;
-	if (++hengFrame >= maxFrame[0]) {
-		hengFrame = 0;
-		if (++verticalFrame >= maxFrame[1]) {
-			verticalFrame = 0;
-			endAnimation = true;
-		}
-	}
-
-	vector<short> nextFrame = { hengFrame, verticalFrame };
-	return nextFrame;
-}
-
 template <typename T>
 const int ActionToIndex( vector<T> actionList, int nowAction) {
 	T action = static_cast<T>(nowAction);
@@ -650,11 +656,11 @@ void CollisionMapX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vec
 	for (int w = left; w < right; w++) {
 		for (int h = top; h < bottom; h++) {
 			if (mapData[w][h] >= 1) {
-				int x = max(nowPos.x, prevX);
-				x /= MAP_CHIPSIZE;
-				if (nowPos.x - prevX < 0) { x++; }
-				x *= MAP_CHIPSIZE;
-				nowPos.x = x;
+				//int x = max(nowPos.x, prevX);
+				//x /= MAP_CHIPSIZE;
+				//if (nowPos.x - prevX < 0) { x++; }
+				//x *= MAP_CHIPSIZE;
+				nowPos.x = prevX;//x;
 			}
 		}
 	}

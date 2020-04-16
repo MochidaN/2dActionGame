@@ -166,29 +166,3 @@ const short Player::GetState(CHARA_STATE request) {
 void Player::SetState(CHARA_STATE request, int state) {
 	Character::SetState(request, state);
 }*/
-
-
-
-Enemy::Enemy(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd) {
-	Character::InitState(g_left, hp, power, defense, pos, action, time, yAdd);
-	m_inWindow = false;
-}
-/*
-const short Enemy::GetState(CHARA_STATE request) {
-	return Character::GetState(request);
-}
-
-void Enemy::SetState(CHARA_STATE request, int state) {
-	Character::SetState(request, state);
-}
-*/
-
-//このキャラクターがウィンドウ内にいるか返す
-const bool Enemy::GetInWindow() {
-	return m_inWindow;
-}
-
-//ウィンドウ内にいるかの状態更新
-void Enemy::SetInWindow(bool flag) {
-	m_inWindow = flag;
-}
