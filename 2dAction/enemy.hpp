@@ -3,54 +3,56 @@
 #include <vector>
 
 using namespace std;
-
-namespace ENEMY {
-	enum class ACTION {
-		STAND,
-		WALK,
-		HIT,
-		DOWN,
-		DEAD,
-		GUARD,
-		PUNCH,
-		DIVE,
-		JUMP_OUT,
-		RAMMING,
-		KICK_FRONT,
-		KICK_BACK,
-		HARD_PUNCH,
-		COMBO_PUNCH,
-		NUM
-	};
-};
+class Player;
+const short g_enemyMoveX = 4;
 
 class Enemy : public Character {
 private:
-	//bool m_inWindow;
+	//各アクションで実行する処理
+	void Punch();
+	void Dive();
+	void JumpOut();
+	void Ramming();
+	void KickFront();
+	void KickBack();
+	void HardPunch();
+	void ComboPunch();
+
+	//次の行動を選択
+	virtual void ChangeAction(Player player, int maxFrameHeng) = 0;
+
+	//攻撃イベントの処理
+	void HandleAttack(Player &player, int myFrame, int oppFrame, vector<int> myAtkRect, vector<int> oppHurtRect);
 public:
 	Enemy(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd);
-	//~Enemy();
+
+	void Update(unsigned int nowTime, vector<vector<int>> maxFrame, vector<vector<vector<int>>> myHurtRect, vector<vector<vector<int>>> oppHurtRect, vector<vector<vector<int>>> myAtkRect, vector<vector<int>> mapData, Player &player);
 
 	//const short GetState(CHARA_STATE request) override;
 	//void SetState(CHARA_STATE request, int state) override;
-
-	//このキャラクターがウィンドウ内にいるか返す
-	//const bool GetInWindow();
-
-	//ウィンドウ内にいるかの状態更新
-	//void SetInWindow(bool flag);
-
-	void Stand();
-	void Walk();
-	void Hit();
-	void Down();
-	void Dead();
 };
 
-//次のアニメーションフレームを計算
-//hengFrame：現在の横コマ数
-//verticalFrame：現在の縦コマ数
-//maxFrame：最大コマ数(0:横 1:縦)
-//endAnimation：アニメーションが一周したかどうか
-//返値：次のフレーム数
-vector<short> ReturnNextFrame(short hengFrame, short verticalFrame, vector<int> maxFrame, bool &endAnimation);
+
+class EnemyGuard : public Enemy {
+public:
+	using Enemy::Enemy;
+	void ChangeAction(Player player, int maxFrameHeng);
+};
+
+class EnemyWarp : public Enemy {
+public:
+	using Enemy::Enemy;
+	void ChangeAction(Player player, int maxFrameHeng);
+};
+
+class EnemyKick : public Enemy {
+public:
+	using Enemy::Enemy;
+	void ChangeAction(Player player, int maxFrameHeng);
+};
+
+class EnemyBoss : public Enemy {
+public:
+	using Enemy::Enemy;
+	void ChangeAction(Player player, int maxFrameHeng);
+};

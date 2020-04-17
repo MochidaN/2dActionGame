@@ -1,5 +1,14 @@
 #pragma once
-#include "enemy.hpp"
+#include <vector>
+
+using namespace std;
+
+class Player;
+class Enemy;
+enum class EVENT;
+namespace ENEMY {
+	enum class ACTION;
+}
 
 //各シーケンスの値
 enum class SEQ_ID {
@@ -9,36 +18,6 @@ enum class SEQ_ID {
 
 	NONE, //無効値
 	QUIT  //終了
-};
-
-enum class CHARA_ID {
-	GUARD,
-	WARP,
-	KICK,
-	BOSS,
-	PLAYER,
-	NUM
-};
-
-enum class PLAYER_ACTION {
-	STAND,
-	WALK,
-	STEP,
-	HIT,
-	HIT_AIR,
-	JUMP,
-	FALL,
-	FALL_HIT,
-	LANDING,
-	FAINT,
-	FAINTING,
-	DOWN,
-	DEAD,
-	GUARD,
-	PARRY,
-	SIDE_ATTACK,
-	VERTICAL_ATTACK,
-	NUM
 };
 
 //シーケンス遷移の基底クラス
@@ -70,35 +49,13 @@ private:
 	vector<vector<vector<vector<int>>>> m_hurtRect;//くらい判定範囲
 
 	Player *m_player;
-	Enemy **m_enemy[static_cast<int>(CHARA_ID::NUM) - 1];
-	//Character **m_chara[static_cast<int>(CHARA_ID::NUM)];
+	Enemy ***m_enemy;
 public :
 	Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, vector<vector<vector<int>>> maxFrame, vector<vector<unsigned int>> attackActive, vector<vector<vector<vector<int>>>> attackRect, vector<vector<unsigned int>> hurtActive, vector<vector<vector<vector<int>>>> hurtRect);
 	~Game();
 
 	bool Update(SDL_Renderer *renderer);
 	void Draw(SDL_Renderer *renderer, int windowPosX);
-};
-
-enum class EVENT {
-	//JOY_TRIANGLE,
-	JOY_CIRCLE,
-	JOY_CROSS,
-	//JOY_SQUARE,
-	JOY_R1,
-	JOY_L1_UP,
-	JOY_L1_DOWN,
-	//JOY_HAT_UP,
-	//JOY_HAT_DOWN,
-	JOY_HAT_RIGHT,
-	//JOY_HAT_RIGHTUP,
-	//JOY_HAT_RIGHTDOWN,
-	JOY_HAT_LEFT,
-	//JOY_HAT_LEFTUP,
-	//JOY_HAT_LEFTDOWN,
-	JOY_HAT_CENTERED,
-	QUIT,
-	NONE
 };
 
 //イベント取得

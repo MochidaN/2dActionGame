@@ -1,3 +1,4 @@
+../../image/guard/stand.png
 ../../image/guard/walk.png
 ../../image/guard/hit.png
 ../../image/guard/down.png
