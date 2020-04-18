@@ -4,7 +4,7 @@
 #include "player.hpp"
 
 const short IMG_SIZE[static_cast<short>(CHARA_ID::NUM)] = { ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, PLAYER_SIZE };
-const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 0, 0, 0, 1, 1 };
+const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 0, 0, 1, 0, 1 };
 const short X = 0, Y = 1, W = 2, H = 3;
 //const short g_playerMoveX = 4;
 //const short g_playerStepX = 20;
@@ -224,19 +224,18 @@ bool Game::Update(SDL_Renderer *renderer) {
 
 	unsigned int nowTime = SDL_GetTicks();
 	const short charaNum = static_cast<short>(CHARA_ID::NUM) - 1;
-	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
-	m_player->Update(nowTime, m_maxFrame[playerID], m_hurtRect[1], m_hurtRect[0], m_mapData, event);
+	const int enemyID = 0, playerID = 1;
+	m_player->Update(nowTime, m_maxFrame[playerID], m_hurtRect[playerID], m_hurtRect[enemyID], m_mapData, event);
 	const int pAction = m_player->GetState(CHARA_STATE::ACTION);
 	const int pFrame = ReturnFrameNum(m_maxFrame[playerID][pAction][0], *m_player);
 	for (int id = 0; id < charaNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
 			const int eAction = m_enemy[id][cn]->GetState(CHARA_STATE::ACTION);
-			const int eFrame = ReturnFrameNum(m_maxFrame[id][eAction][0], *m_enemy[id][cn]);
-			m_player->CollisionChara(m_hurtRect[1][pAction][pFrame], m_hurtRect[0][eAction][eFrame], m_mapData, *m_enemy[id][cn]);
-			m_player->HandleAttack(*m_enemy[id][cn], pFrame, eFrame, m_attackRect[1][pAction][pFrame], m_hurtRect[1][eAction][eFrame]);
-
-
-			m_enemy[id][cn]->Update(nowTime, m_maxFrame[id], m_hurtRect[0], m_hurtRect[1], m_attackRect[0], m_mapData, *m_player);
+			const int eFrame = ReturnFrameNum(m_maxFrame[enemyID][eAction][0], *m_enemy[id][cn]);
+			
+			m_player->CollisionChara(m_hurtRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame], m_mapData, *m_enemy[id][cn]);
+			m_player->HandleAttack(*m_enemy[id][cn], pFrame, eFrame, m_attackRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame]);
+			m_enemy[id][cn]->Update(nowTime, m_maxFrame[enemyID], m_hurtRect[enemyID], m_hurtRect[playerID], m_attackRect[enemyID], m_mapData, *m_player);
 		}
 	}
 
@@ -252,24 +251,28 @@ void Game::Draw(SDL_Renderer *renderer, int windowPosX) {
 	for (int id = 0; id < charaNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
 			auto UpdateAnimation = [renderer, id, windowPosX](SDL_Texture **charaTexture, Character &my, vector<vector<int>> maxFrame, vector<vector<ENEMY::ACTION>> m_enemyAction, vector<vector<vector<vector<int>>>> hurtRect, vector<vector<int>> m_mapData) {
-				short action = my.GetState(CHARA_STATE::ACTION);
 				SDL_Rect srcChara = { my.GetState(CHARA_STATE::FRAME_H) * IMG_SIZE[id], my.GetState(CHARA_STATE::FRAME_V) * IMG_SIZE[id], IMG_SIZE[id], IMG_SIZE[id] };
 				SDL_Rect dstRect = my.GetPos();
 				dstRect.x -= windowPosX;
+
+				short action = my.GetState(CHARA_STATE::ACTION);
+				if (id < static_cast<int>(CHARA_ID::BOSS)) { action = ActionToIndex(m_enemyAction[id], action); }
 
 				if (my.GetState(CHARA_STATE::DIR) == g_right) {//âEå¸Ç´
 					SDL_RenderCopy(renderer, charaTexture[action], &srcChara, &dstRect);
 				}
 				else {//ç∂
+					if (id == 2) { cout << action << endl; }
+
 					SDL_RenderCopyEx(renderer, charaTexture[action], &srcChara, &dstRect, 180, NULL, SDL_FLIP_VERTICAL);
 				}
 			};
 
 			if (id == playerID) {
-				UpdateAnimation(m_characterTexture[id], *m_player,  m_maxFrame[id], m_enemyAction, m_hurtRect, m_mapData);
+				UpdateAnimation(m_characterTexture[id], *m_player,  m_maxFrame[1], m_enemyAction, m_hurtRect, m_mapData);
 			}
 			else {
-				UpdateAnimation(m_characterTexture[id], *m_enemy[id][cn], m_maxFrame[id], m_enemyAction, m_hurtRect, m_mapData);
+				UpdateAnimation(m_characterTexture[id], *m_enemy[id][cn], m_maxFrame[0], m_enemyAction, m_hurtRect, m_mapData);
 			}
 		}
 	}

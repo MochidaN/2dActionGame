@@ -36,17 +36,6 @@ bool Character::UpdateAnimation(unsigned int nowTime, vector<int> maxFrame) {
 	if (nowTime - m_prevTime >= ANIME_INTERVAL) {
 		//アニメーション更新
 		vector<short> frame = ReturnNextFrame(m_heng, m_vertical, maxFrame, endAnimation);
-		/*
-		const short walk[2] = { static_cast<short>(ENEMY::ACTION::WALK), static_cast<short>(PLAYER::ACTION::WALK) };
-		const short guard[2] = { static_cast<short>(ENEMY::ACTION::GUARD), static_cast<short>(PLAYER::ACTION::GUARD) };
-		const short dead[2] = { static_cast<short>(ENEMY::ACTION::DEAD), static_cast<short>(PLAYER::ACTION::DEAD) };
-		if ((endAnimation == true)
-			&& (m_action != walk[0]) && (m_action != guard[0]) && (m_action != dead[0])
-			&& (m_action != walk[1]) && (m_action != guard[1]) && (m_action != dead[1])) {
-
-			SetState(CHARA_STATE::ACTION, 0);//stand
-			m_xAdd = 0;
-		}*/
 		m_heng = frame[0];
 		m_vertical = frame[1];
 		m_prevTime = nowTime;

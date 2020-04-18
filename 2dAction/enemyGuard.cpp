@@ -7,6 +7,7 @@ void EnemyGuard::ChangeAction(Player player, int maxFrameHeng) {
 	mt19937 mt{ std::random_device{}() };
 	uniform_int_distribution<int> dist(1, 10);
 	const int r = dist(mt);
+
 	if (1 <= r && r <= 6) {
 		SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::GUARD));
 		SetState(CHARA_STATE::X_ADD, 0);

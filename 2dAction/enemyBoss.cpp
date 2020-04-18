@@ -72,4 +72,5 @@ void CloseAction(int randNum, EnemyBoss &chara) {
 		chara.SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::STAND));
 	}
 	chara.SetState(CHARA_STATE::X_ADD, xAdd);
+
 }

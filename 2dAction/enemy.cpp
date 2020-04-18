@@ -8,16 +8,14 @@ Enemy::Enemy(short hp, short power, short defense, SDL_Rect pos, short action, u
 
 void Enemy::Update(unsigned int nowTime, vector<vector<int>> maxFrame, vector<vector<vector<int>>> myHurtRect, vector<vector<vector<int>>> oppHurtRect, vector<vector<vector<int>>> myAtkRect, vector<vector<int>> mapData, Player &player) {
 	vector<int> mFrame = maxFrame[GetState(CHARA_STATE::ACTION)];
-	if (UpdateAnimation(nowTime, mFrame) == true) {
-		ChangeAction(player, mFrame[0]);
-	}
-	const int maxHeng = maxFrame[static_cast<int>(GetState(CHARA_STATE::ACTION))][0];
-	const int myFrameNum = ReturnFrameNum(maxHeng, *this);
-	const int oppFrameNum = ReturnFrameNum(maxHeng, player);
+	if (UpdateAnimation(nowTime, mFrame) == true) { ChangeAction(player, mFrame[0]); }
+	
+	const int myFrameNum = ReturnFrameNum(maxFrame[static_cast<int>(GetState(CHARA_STATE::ACTION))][0], *this);
+	const int oppFrameNum = ReturnFrameNum(maxFrame[static_cast<int>(player.GetState(CHARA_STATE::ACTION))][0], player);
+
 	HandleAttack(player, myFrameNum, oppFrameNum, myAtkRect[static_cast<int>(GetState(CHARA_STATE::ACTION))][myFrameNum], oppHurtRect[static_cast<int>(player.GetState(CHARA_STATE::ACTION))][oppFrameNum]);
 	MovePos(myHurtRect[static_cast<int>(GetState(CHARA_STATE::ACTION))][myFrameNum], mapData);
-	CollisionChara(myHurtRect[static_cast<int>(GetState(CHARA_STATE::ACTION))][myFrameNum],
-		oppHurtRect[static_cast<int>(player.GetState(CHARA_STATE::ACTION))][oppFrameNum], mapData, player);
+	CollisionChara(myHurtRect[static_cast<int>(GetState(CHARA_STATE::ACTION))][myFrameNum], oppHurtRect[static_cast<int>(player.GetState(CHARA_STATE::ACTION))][oppFrameNum], mapData, player);
 }
 
 void Enemy::HandleAttack(Player &player, int myFrame, int oppFrame, vector<int> myAtkRect, vector<int> oppHurtRect) {
@@ -66,14 +64,36 @@ void Enemy::HandleAttack(Player &player, int myFrame, int oppFrame, vector<int> 
 	}
 }
 
-void Enemy::Punch() {}
-void Enemy::Dive(){}
-void Enemy::JumpOut(){}
-void Enemy::Ramming(){}
-void Enemy::KickFront(){}
-void Enemy::KickBack(){}
-void Enemy::HardPunch(){}
-void Enemy::ComboPunch(){}
+void Enemy::Punch() {
+
+}
+
+void Enemy::Dive(){
+
+}
+
+void Enemy::JumpOut(){
+
+}
+
+void Enemy::Ramming(){
+
+}
+void Enemy::KickFront(){
+
+}
+
+void Enemy::KickBack(){
+
+}
+
+void Enemy::HardPunch(){
+
+}
+
+void Enemy::ComboPunch(){
+
+}
 
 /*
 const short Enemy::GetState(CHARA_STATE request) {

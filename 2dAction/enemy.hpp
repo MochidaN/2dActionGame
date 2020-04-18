@@ -36,23 +36,23 @@ public:
 class EnemyGuard : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng);
+	void ChangeAction(Player player, int maxFrameHeng) override;
 };
 
 class EnemyWarp : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng);
+	void ChangeAction(Player player, int maxFrameHeng) override;
 };
 
 class EnemyKick : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng);
+	void ChangeAction(Player player, int maxFrameHeng) override;
 };
 
 class EnemyBoss : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng);
+	void ChangeAction(Player player, int maxFrameHeng) override;
 };

@@ -22,7 +22,7 @@ MainLoop::MainLoop() {
 	}
 
 	//GUARD,WARP,KICK
-	vector<vector<ENEMY::ACTION>> action{ { ENEMY::ACTION::STAND, ENEMY::ACTION::WALK, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::GUARD, ENEMY::ACTION::PUNCH}, {ENEMY::ACTION::STAND, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::DIVE, ENEMY::ACTION::JUMP_OUT}, { ENEMY::ACTION::STAND, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::RAMMING, ENEMY::ACTION::KICK_FRONT, ENEMY::ACTION::KICK_BACK} };
+	vector<vector<ENEMY::ACTION>> action{ { ENEMY::ACTION::STAND, ENEMY::ACTION::WALK, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::GUARD, ENEMY::ACTION::PUNCH}, {ENEMY::ACTION::STAND, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::DIVE, ENEMY::ACTION::JUMP_OUT}, { ENEMY::ACTION::STAND, ENEMY::ACTION::WALK, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::RAMMING, ENEMY::ACTION::KICK_FRONT, ENEMY::ACTION::KICK_BACK} };
 	const short actionSize = action.size();
 	m_enemyAction.resize(actionSize);
 	for (int i = 0; i < actionSize; i++) {
@@ -50,21 +50,16 @@ MainLoop::MainLoop() {
 	string attackActiveFile("attackActive.txt");
 	string hurtActiveFile("hurtActive.txt");
 
-	for (auto fp : filePath) {
-		m_maxFrame.push_back(ReadFileSplit(fp + animFrameFile, ' '));
-	}
+	m_maxFrame.push_back(ReadFileSplit(filePath[static_cast<int>(CHARA_ID::BOSS)] + animFrameFile, ' '));
+	m_maxFrame.push_back(ReadFileSplit(filePath[static_cast<int>(CHARA_ID::PLAYER)] + animFrameFile, ' '));
 
 	auto paramToBit = [](vector<vector<int>> num) {
 		vector<unsigned int> flag;
 		for (auto i : num) {
-			if (i[0] < 0) {
-				flag.push_back(0);
-			}
+			if (i[0] < 0) { flag.push_back(0); }
 			else {
 				unsigned short bit = 0;
-				for (auto j : i) {
-					bit |= (1 << j);
-				}
+				for (auto j : i) { bit |= (1 << j); }
 				flag.push_back(bit);
 			}
 		}
