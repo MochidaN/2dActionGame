@@ -28,7 +28,8 @@ enum class CHARA_STATE {
 	X_ADD,
 	Y_ADD,
 	HURT_ACTIVE,
-	ATTACK_ACTIVE
+	ATTACK_ACTIVE,
+	TRUNK
 };
 
 namespace ENEMY {
@@ -83,7 +84,6 @@ private:
 	short m_hp;
 	short m_power;//攻撃力
 	short m_defense;//防御力
-	//int m_trunk;//体幹
 	SDL_Rect m_pos;//位置(キャラの判定ではなく画像全体) 
 	short m_vertical;//現在のアニメーションコマ数(縦)
 	short m_heng;//現在のアニメーションコマ数(横)

@@ -214,6 +214,7 @@ bool Game::Update(SDL_Renderer *renderer) {
 	const short charaNum = static_cast<short>(CHARA_ID::NUM) - 1;
 	const int enemyID = 0, playerID = 1;
 	m_player->Update(nowTime, m_maxFrame[playerID], m_hurtRect[playerID], m_hurtRect[enemyID], m_hurtActive[playerID], m_attackActive[playerID], m_mapData, event);
+
 	const int pAction = m_player->GetState(CHARA_STATE::ACTION);
 	const int pFrame = ReturnFrameNum(m_maxFrame[playerID][pAction][0], *m_player);
 	for (int id = 0; id < charaNum; id++) {

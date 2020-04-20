@@ -25,7 +25,7 @@ void Enemy::Update(unsigned int nowTime, vector<vector<vector<int>>> maxFrame, v
 void Enemy::HandleAttack(Player &player, int myFrame, int oppFrame, vector<int> myAtkRect, vector<int> oppHurtRect) {
 	const unsigned int atkActive = GetActiveBit(CHARA_STATE::ATTACK_ACTIVE, myFrame);
 	const unsigned int hurtActive = GetActiveBit(CHARA_STATE::HURT_ACTIVE, oppFrame);
-	if ((atkActive != 0) && (hurtActive != 0) && (player.GetState(CHARA_STATE::ACTION) != static_cast<short>(PLAYER::ACTION::GUARD))) {
+	if ((atkActive != 0) && (hurtActive != 0)){// && (player.GetState(CHARA_STATE::ACTION) != static_cast<short>(PLAYER::ACTION::GUARD))) {
 
 		if (GetState(CHARA_STATE::DIR) == g_left) { myAtkRect = FlipRect(myAtkRect, GetPos().w); }
 		if (player.GetState(CHARA_STATE::DIR) == g_left) { oppHurtRect = FlipRect(oppHurtRect, player.GetPos().w); }
@@ -107,17 +107,28 @@ void Enemy::ComboPunch(Player &player){
 
 //各攻撃のダメージ計算と、相手の行動をHitに変更する
 void CalculateDamage(Player &player, short damage, short enemyPow) {
-	short playerHp = player.GetState(CHARA_STATE::HP);
+	if (player.GetState(CHARA_STATE::ACTION) == static_cast<short>(PLAYER::ACTION::GUARD)) {//ガードされた
+		short playerTrunk = player.GetState(CHARA_STATE::TRUNK);
 
-	playerHp -= (damage + (enemyPow - player.GetState(CHARA_STATE::DEF)));
-	if (playerHp < 0) { playerHp = 0; }
-	player.SetState(CHARA_STATE::HP, playerHp);
-
-	if (player.GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground || player.GetState(CHARA_STATE::Y_ADD) == 0) {
-		player.SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER::ACTION::HIT));
+		playerTrunk -= (damage + (enemyPow - player.GetState(CHARA_STATE::DEF)));
+		if (playerTrunk < 0) {
+			player.SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER::ACTION::FAINT));
+			playerTrunk = 0; 
+		}
+		player.SetState(CHARA_STATE::HP, playerTrunk);
 	}
 	else {
-		player.SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER::ACTION::HIT_AIR));
+		short playerHp = player.GetState(CHARA_STATE::HP);
+		playerHp -= (damage + (enemyPow - player.GetState(CHARA_STATE::DEF)));
+		if (playerHp < 0) { playerHp = 0; }
+		player.SetState(CHARA_STATE::HP, playerHp);
+
+		if (player.GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground || player.GetState(CHARA_STATE::Y_ADD) == 0) {
+			player.SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER::ACTION::HIT));
+		}
+		else {
+			player.SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER::ACTION::HIT_AIR));
+		}
 	}
 }
 

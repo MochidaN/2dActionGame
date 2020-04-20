@@ -9,6 +9,9 @@ enum class EVENT;
 
 class Player : public Character {
 private:
+	int m_trunk;//ガード耐久値
+	unsigned int m_cannotChangeAction;//実行中キャンセルできないアクションを示すビット列
+
 	//各アクションで実行する処理
 	void Parry(Enemy &enemy);
 	void SideAttack(Enemy &enemy);
@@ -28,6 +31,6 @@ public:
 	//攻撃イベントの処理
 	void HandleAttack(Enemy &enemy, int myFrame, int oppFrame, vector<int> myAtkRect, vector<int> oppHurtRect);
 
-	//const short GetState(CHARA_STATE request) override;
-	//void SetState(CHARA_STATE request, int state) override;
+	const short GetState(CHARA_STATE request) override;
+	void SetState(CHARA_STATE request, short state) override;
 };
