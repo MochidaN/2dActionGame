@@ -4,7 +4,7 @@
 #include "player.hpp"
 
 const short IMG_SIZE[static_cast<short>(CHARA_ID::NUM)] = { ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, PLAYER_SIZE };
-const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 0, 0, 1, 0, 1 };
+const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 0, 0, 0, 1, 1 };
 const short X = 0, Y = 1, W = 2, H = 3;
 //const short g_playerMoveX = 4;
 //const short g_playerStepX = 20;
@@ -140,78 +140,66 @@ bool Game::Update(SDL_Renderer *renderer) {
 	if (windowPosX < 0) { windowPosX = 0; }
 	else if (windowPosX + winWidth > WORLD_WIDTH * MAP_CHIPSIZE) { windowPosX = (WORLD_WIDTH - WINDOW_WIDTH) * MAP_CHIPSIZE; }
 
-	Draw(renderer, windowPosX);	
-
-	/*
-	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
-	const short act = m_player->GetState(CHARA_STATE::ACTION);
-	const short pNowFrame = ReturnFrameNum(m_maxFrame[playerID][act][0], *m_player);
-	SDL_Rect playerPos = ReturnCharaRect(m_player->GetPos(), m_hurtRect[1][act][pNowFrame], m_player->GetState(CHARA_STATE::DIR));
-	SDL_Rect pAtkRect = { -1, -1, -1, -1 };
-	if (m_player->GetActiveBit(CHARA_STATE::ATTACK_ACTIVE, pNowFrame) != 0) {
-		pAtkRect = ReturnCharaRect(m_player->GetPos(), m_attackRect[1][act][pNowFrame], m_player->GetState(CHARA_STATE::DIR));
-	}
+	Draw(renderer, windowPosX);
 
 #ifdef _DEBUG
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+
+	const short pid = static_cast<short>(CHARA_ID::PLAYER);
+	const short act = m_player->GetState(CHARA_STATE::ACTION);
+	const short pNowFrame = ReturnFrameNum(m_maxFrame[1][act][0], *m_player);
+
+	vector<int> hurtrect = m_hurtRect[1][act][pNowFrame];
+	vector<int> atkrect = m_attackRect[1][act][pNowFrame];
+	if (m_player->GetState(CHARA_STATE::DIR) == g_left) {
+		hurtrect = FlipRect(hurtrect, IMG_SIZE[pid]);
+		atkrect = FlipRect(atkrect, IMG_SIZE[pid]);
+	}
+
+	SDL_Rect playerPos = ReturnCharaRect(m_player->GetPos(), hurtrect);
 	SDL_Rect dst = playerPos;
 	dst.x -= windowPosX;
 	SDL_RenderDrawRect(renderer, &dst);
-	if (pAtkRect.x >= 0) {
+
+	SDL_Rect pAtkRect = { -1, -1, -1, -1 };
+	if (m_player->GetActiveBit(CHARA_STATE::ATTACK_ACTIVE, pNowFrame) != 0) {
+		pAtkRect = ReturnCharaRect(m_player->GetPos(), atkrect);
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		dst = pAtkRect;
 		dst.x -= windowPosX;
 		SDL_RenderDrawRect(renderer, &dst);
 	}
-#endif
 
-	const short charaNum = static_cast<short>(CHARA_ID::NUM) - 1;
-	for (int id = 0; id < charaNum; id++) {
+	const short eneNum = static_cast<short>(CHARA_ID::NUM) - 1;
+	for (int id = 0; id < eneNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
-			const short action = m_enemy[id][cn]->GetState(CHARA_STATE::ACTION);
-			const short eNowFrame = ReturnFrameNum(m_maxFrame[id][action][0], *m_enemy[id][cn]);
-			SDL_Rect enemyPos = ReturnCharaRect(m_enemy[id][cn]->GetPos(), m_hurtRect[0][action][eNowFrame], m_enemy[id][cn]->GetState(CHARA_STATE::DIR));
-			if ((windowPosX <= enemyPos.x + enemyPos.w) && (windowPosX + winWidth >= enemyPos.x)) {//ウィンドウ内にいる
+			const short a = m_enemy[id][cn]->GetState(CHARA_STATE::ACTION);
+			const short eNowFrame = ReturnFrameNum(m_maxFrame[0][a][0], *m_enemy[id][cn]);
 
-#ifdef _DEBUG
+			vector<int> eHurtrect = m_hurtRect[0][a][eNowFrame];
+			vector<int> eAtkrect = m_attackRect[0][a][eNowFrame];
+			if (m_enemy[id][cn]->GetState(CHARA_STATE::DIR) == g_left) {
+				eHurtrect = FlipRect(eHurtrect, IMG_SIZE[id]);
+				eAtkrect = FlipRect(eAtkrect, IMG_SIZE[id]);
+			}
+			SDL_Rect enemyPos = ReturnCharaRect(m_enemy[id][cn]->GetPos(),eHurtrect);
+
+			if ((windowPosX <= enemyPos.x + enemyPos.w) && (windowPosX + winWidth >= enemyPos.x)) {//ウィンドウ内にいる
 				SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-				SDL_Rect dst = enemyPos;
+				dst = enemyPos;
 				dst.x -= windowPosX;
 				SDL_RenderDrawRect(renderer, &dst);
-#endif
 
-				if (DetectCollisionRect(playerPos, enemyPos) == true) {//プレイヤと敵がぶつかっている
-					SDL_Rect p = m_player->GetPos();
-					SDL_Rect e = m_enemy[id][cn]->GetPos();
-					const short dst = g_playerMoveX;
-					int pDst = (playerPos.x <= enemyPos.x) ? -dst : dst;
-					int eDst = (playerPos.x <= enemyPos.x) ? dst : -dst;
-					m_player->SetPos(MovePositionX(p, m_hurtRect[1][act][pNowFrame], pDst, WORLD_WIDTH, m_mapData));
-					m_enemy[id][cn]->SetPos(MovePositionX(e, m_hurtRect[0][action][eNowFrame], eDst, WORLD_WIDTH, m_mapData));
-				}
-
-				if (pAtkRect.x != -1) {
-					if (DetectCollisionRect(pAtkRect, enemyPos) == true) {
-						m_enemy[id][cn]->SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::HIT));
-						m_player->SetActiveBit(CHARA_STATE::ATTACK_ACTIVE, 0);//攻撃判定をなくす
-					}
-				}
-				
-				if (m_enemy[id][cn]->GetActiveBit(CHARA_STATE::ATTACK_ACTIVE, eNowFrame) != 0) {//敵の行動に攻撃判定がある
-					SDL_Rect eAtkRect = ReturnCharaRect(m_enemy[id][cn]->GetPos(), m_attackRect[0][action][eNowFrame], m_enemy[id][cn]->GetState(CHARA_STATE::DIR));
-					if (DetectCollisionRect(playerPos, eAtkRect) == true) {
-
-					}
-#ifdef _DEBUG
+				if (m_enemy[id][cn]->GetActiveBit(CHARA_STATE::ATTACK_ACTIVE, eNowFrame) != 0) {
 					SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-					SDL_Rect dst = eAtkRect;
+					dst = ReturnCharaRect(m_enemy[id][cn]->GetPos(), eAtkrect);
 					dst.x -= windowPosX;
 					SDL_RenderDrawRect(renderer, &dst);
-#endif
 				}
 			}
 		}
-	}*/
+	}
+#endif
 
 	EVENT event = GetEvent(m_joystick);
 	switch (event) {
@@ -221,21 +209,21 @@ bool Game::Update(SDL_Renderer *renderer) {
 		break;
 	}
 	}
-
+	
 	unsigned int nowTime = SDL_GetTicks();
 	const short charaNum = static_cast<short>(CHARA_ID::NUM) - 1;
 	const int enemyID = 0, playerID = 1;
-	m_player->Update(nowTime, m_maxFrame[playerID], m_hurtRect[playerID], m_hurtRect[enemyID], m_mapData, event);
+	m_player->Update(nowTime, m_maxFrame[playerID], m_hurtRect[playerID], m_hurtRect[enemyID], m_hurtActive[playerID], m_attackActive[playerID], m_mapData, event);
 	const int pAction = m_player->GetState(CHARA_STATE::ACTION);
 	const int pFrame = ReturnFrameNum(m_maxFrame[playerID][pAction][0], *m_player);
 	for (int id = 0; id < charaNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
 			const int eAction = m_enemy[id][cn]->GetState(CHARA_STATE::ACTION);
 			const int eFrame = ReturnFrameNum(m_maxFrame[enemyID][eAction][0], *m_enemy[id][cn]);
-			
+
 			m_player->CollisionChara(m_hurtRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame], m_mapData, *m_enemy[id][cn]);
 			m_player->HandleAttack(*m_enemy[id][cn], pFrame, eFrame, m_attackRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame]);
-			m_enemy[id][cn]->Update(nowTime, m_maxFrame[enemyID], m_hurtRect[enemyID], m_hurtRect[playerID], m_attackRect[enemyID], m_mapData, *m_player);
+			m_enemy[id][cn]->Update(nowTime, m_maxFrame, m_hurtRect[enemyID], m_hurtRect[playerID], m_attackRect[enemyID], m_hurtActive[enemyID], m_attackActive[enemyID], m_mapData, *m_player);
 		}
 	}
 

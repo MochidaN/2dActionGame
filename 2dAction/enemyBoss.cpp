@@ -5,11 +5,14 @@
 
 void CloseAction(int randNum, EnemyBoss &chara);
 
-void EnemyBoss::ChangeAction(Player player, int maxFrameHeng) {
+void EnemyBoss::ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) {
 	mt19937 mt{ std::random_device{}() };
 	uniform_int_distribution<int> dist(1, 100);
 	const int r = dist(mt);
 
+	const short nextAction = static_cast<short>(ENEMY::ACTION::HARD_PUNCH);
+	SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
+	/*
 	float distance = CalculateSquaredDistance(GetPos(), player.GetPos());
 	const float attackRange = 200;
 	if (distance < attackRange * attackRange) {//ƒvƒŒƒCƒ„‚ª‹ß‚­‚É‚¢‚é‚Æ‚«
@@ -42,7 +45,7 @@ void EnemyBoss::ChangeAction(Player player, int maxFrameHeng) {
 			SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::STAND));
 		}
 		SetState(CHARA_STATE::X_ADD, xAdd);
-	}
+	}*/
 }
 
 void CloseAction(int randNum, EnemyBoss &chara) {

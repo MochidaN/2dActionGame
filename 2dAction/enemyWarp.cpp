@@ -3,7 +3,7 @@
 #include "player.hpp"
 #include <random>
 
-void EnemyWarp::ChangeAction(Player player, int maxFrameHeng) {
+void EnemyWarp::ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) {
 	mt19937 mt{ std::random_device{}() };
 	uniform_int_distribution<int> dist(1, 10);
 	const int r = dist(mt);

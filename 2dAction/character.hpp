@@ -214,3 +214,6 @@ SDL_Rect ReturnCharaRect(SDL_Rect pos, vector<int> rect);
 //引数:判定する2矩形
 //返値 true:衝突している false:していない
 bool DetectCollisionRect(SDL_Rect r0, SDL_Rect r1);
+
+//アクションとActiveBitの変更をする
+void SetAction(Character &chara, short nextAction, unsigned int hurtActive, unsigned int atkActive);

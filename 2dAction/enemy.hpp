@@ -9,24 +9,24 @@ const short g_enemyMoveX = 4;
 class Enemy : public Character {
 private:
 	//各アクションで実行する処理
-	void Punch();
-	void Dive();
-	void JumpOut();
-	void Ramming();
-	void KickFront();
-	void KickBack();
-	void HardPunch();
-	void ComboPunch();
+	void Punch(Player &player);
+	void Dive(Player &player);
+	void JumpOut(Player &player);
+	void Ramming(Player &player);
+	void KickFront(Player &player);
+	void KickBack(Player &player);
+	void HardPunch(Player &player);
+	void ComboPunch(Player &player);
 
 	//次の行動を選択
-	virtual void ChangeAction(Player player, int maxFrameHeng) = 0;
+	virtual void ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) = 0;
 
 	//攻撃イベントの処理
 	void HandleAttack(Player &player, int myFrame, int oppFrame, vector<int> myAtkRect, vector<int> oppHurtRect);
 public:
 	Enemy(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd);
 
-	void Update(unsigned int nowTime, vector<vector<int>> maxFrame, vector<vector<vector<int>>> myHurtRect, vector<vector<vector<int>>> oppHurtRect, vector<vector<vector<int>>> myAtkRect, vector<vector<int>> mapData, Player &player);
+	void Update(unsigned int nowTime, vector<vector<vector<int>>> maxFrame, vector<vector<vector<int>>> myHurtRect, vector<vector<vector<int>>> oppHurtRect, vector<vector<vector<int>>> myAtkRect, vector<unsigned int> myHurtActive, vector<unsigned int> myAtkActive, vector<vector<int>> mapData, Player &player);
 
 	//const short GetState(CHARA_STATE request) override;
 	//void SetState(CHARA_STATE request, int state) override;
@@ -36,23 +36,23 @@ public:
 class EnemyGuard : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng) override;
+	void ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
 };
 
 class EnemyWarp : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng) override;
+	void ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
 };
 
 class EnemyKick : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng) override;
+	void ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
 };
 
 class EnemyBoss : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng) override;
+	void ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
 };

@@ -54,7 +54,7 @@ void Character::MovePos(vector<int> myHurtRect, vector<vector<int>> mapData) {
 	m_pos = MovePositionY(m_pos, myHurtRect, m_yAdd, WORLD_HEIGHT, mapData);
 }
 
-void Character::CollisionChara(vector<int> myHurtRect, vector<int> oppHurtRect, vector<vector<int>> mapData, Character &opponent) {
+void Character::CollisionChara(vector<int> myHurtRect, vector<int> oppHurtRect, vector<vector<int>> mapData, Character &opponent) {	
 	//ç∂å¸Ç´Ç»ÇÁìñÇΩÇËîªíËîΩì]
 	if (m_dir == g_left) { myHurtRect = FlipRect(myHurtRect, m_pos.w); }
 	if (opponent.GetState(CHARA_STATE::DIR) == g_left) { oppHurtRect = FlipRect(oppHurtRect, opponent.GetPos().w); }
@@ -237,9 +237,7 @@ SDL_Rect MovePositionX(SDL_Rect nowPos, vector<int> hurtRect, int distance, int 
 	const int prevX = nowPos.x;
 	nowPos.x += distance;
 	const int charaPos = nowPos.x + hurtRect[X];
-	if (charaPos < 0) {
-		nowPos.x = -hurtRect[X];
-	}
+	if (charaPos < 0) { nowPos.x = -hurtRect[X]; }
 	else if (charaPos + hurtRect[W] > worldWidth * MAP_CHIPSIZE) {
 		nowPos.x = worldWidth * MAP_CHIPSIZE - (hurtRect[X] + hurtRect[W]);
 	}
@@ -329,4 +327,10 @@ bool DetectCollisionRect(SDL_Rect r0, SDL_Rect r1) {
 	float distanceY = abs((r0.y + (r0.h / 2)) - (r1.y + (r1.h / 2)));
 
 	return (distanceX < (float)((r0.w + r1.w) / 2) && distanceY < (float)((r0.h + r1.h) / 2)) ? true : false;
+}
+
+void SetAction(Character &chara, short nextAction, unsigned int hurtActive, unsigned int atkActive) {
+	chara.SetState(CHARA_STATE::ACTION, nextAction);
+	chara.SetActiveBit(CHARA_STATE::HURT_ACTIVE, hurtActive);
+	chara.SetActiveBit(CHARA_STATE::ATTACK_ACTIVE, atkActive);
 }
