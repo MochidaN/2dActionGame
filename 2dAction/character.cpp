@@ -46,11 +46,10 @@ bool Character::UpdateAnimation(unsigned int nowTime, vector<int> maxFrame) {
 void Character::MovePos(vector<int> myHurtRect, vector<vector<int>> mapData) {
 	//¶Œü‚«‚È‚ç“–‚½‚è”»’è”½“]
 	if (m_dir == g_left) { myHurtRect = FlipRect(myHurtRect, m_pos.w); }
-
-	if (m_xAdd > 0) {//x•ûŒü‚ÌˆÚ“®‚ª‚ ‚é‚Æ‚«
+	
+	if (m_xAdd != 0) {//x•ûŒü‚ÌˆÚ“®‚ª‚ ‚é‚Æ‚«
 		m_pos = MovePositionX(m_pos, myHurtRect, m_xAdd * m_dir, WORLD_WIDTH, mapData);
 	}
-
 	m_pos = MovePositionY(m_pos, myHurtRect, m_yAdd, WORLD_HEIGHT, mapData);
 }
 
@@ -111,9 +110,7 @@ const short Character::GetState(CHARA_STATE request) {
 void Character::SetState(CHARA_STATE request, short state) {
 	switch (request) {
 	case CHARA_STATE::DIR: {
-		if (state == g_right || state == g_left) {
-			m_dir = state;
-		}
+		if (state == g_right || state == g_left) { m_dir = state; }
 		break;
 	}
 	case CHARA_STATE::HP: {
@@ -258,11 +255,10 @@ SDL_Rect MovePositionY(SDL_Rect nowPos, vector<int> hurtRect, short &yAdd, int w
 	else if (charaPos + hurtRect[H] > worldHeight * MAP_CHIPSIZE) {
 		nowPos.y = worldHeight * MAP_CHIPSIZE - (hurtRect[Y] + hurtRect[H]);
 	}
-
 	if (CollisionMapY(nowPos, nowPos.y, hurtRect, mapData)) {
 		yAdd = g_yAdd_ground;
 	}
-
+	
 	return nowPos;
 }
 
@@ -274,7 +270,7 @@ void CollisionMapX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vec
 	const short top = (nowPos.y + hurtRect[Y]) / MAP_CHIPSIZE;
 	short bottom = (nowPos.y + hurtRect[Y] + hurtRect[H]) / MAP_CHIPSIZE;
 	if (bottom > WORLD_HEIGHT) { bottom = WORLD_HEIGHT; }
-
+	
 	for (int w = left; w < right; w++) {
 		for (int h = top; h < bottom; h++) {
 			if (mapData[w][h] >= 1) {
@@ -296,7 +292,7 @@ bool CollisionMapY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vec
 	const short top = (nowPos.y + hurtRect[Y]) / MAP_CHIPSIZE;
 	short bottom = (nowPos.y + hurtRect[Y] + hurtRect[H] + MAP_CHIPSIZE - 1) / MAP_CHIPSIZE;
 	if (bottom > WORLD_HEIGHT) { bottom = WORLD_HEIGHT; }
-
+	cout << top << "  " << nowPos.y << "  " << hurtRect[Y] << endl<< endl;
 	for (int w = left; w < right; w++) {
 		for (int h = top; h < bottom; h++) {
 			if (mapData[w][h] >= 1) {

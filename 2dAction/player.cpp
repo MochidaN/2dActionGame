@@ -243,7 +243,11 @@ void CalculateDamage(Enemy &enemy, short damage, short playerPow) {
 	short enemyHp = enemy.GetState(CHARA_STATE::HP);
 
 	enemyHp -= (damage + (playerPow - enemy.GetState(CHARA_STATE::DEF)));
-	if (enemyHp < 0) { enemyHp = 0; }
+	if (enemyHp <= 0) { 
+		enemy.SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::DOWN)); 
+		return; 
+	}
+
 	enemy.SetState(CHARA_STATE::HP, enemyHp);
 	enemy.SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::HIT));
 }

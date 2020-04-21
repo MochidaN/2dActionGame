@@ -141,7 +141,7 @@ bool Game::Update(SDL_Renderer *renderer) {
 	else if (windowPosX + winWidth > WORLD_WIDTH * MAP_CHIPSIZE) { windowPosX = (WORLD_WIDTH - WINDOW_WIDTH) * MAP_CHIPSIZE; }
 
 	Draw(renderer, windowPosX);
-
+	
 #ifdef _DEBUG
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 
@@ -169,7 +169,7 @@ bool Game::Update(SDL_Renderer *renderer) {
 		dst.x -= windowPosX;
 		SDL_RenderDrawRect(renderer, &dst);
 	}
-
+	
 	const short eneNum = static_cast<short>(CHARA_ID::NUM) - 1;
 	for (int id = 0; id < eneNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
@@ -214,20 +214,23 @@ bool Game::Update(SDL_Renderer *renderer) {
 	const short charaNum = static_cast<short>(CHARA_ID::NUM) - 1;
 	const int enemyID = 0, playerID = 1;
 	m_player->Update(nowTime, m_maxFrame[playerID], m_hurtRect[playerID], m_hurtRect[enemyID], m_hurtActive[playerID], m_attackActive[playerID], m_mapData, event);
-
+	
 	const int pAction = m_player->GetState(CHARA_STATE::ACTION);
 	const int pFrame = ReturnFrameNum(m_maxFrame[playerID][pAction][0], *m_player);
+	const short enemyDead = static_cast<short>(ENEMY::ACTION::DEAD);
+	
 	for (int id = 0; id < charaNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
-			const int eAction = m_enemy[id][cn]->GetState(CHARA_STATE::ACTION);
-			const int eFrame = ReturnFrameNum(m_maxFrame[enemyID][eAction][0], *m_enemy[id][cn]);
-
-			m_player->CollisionChara(m_hurtRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame], m_mapData, *m_enemy[id][cn]);
-			m_player->HandleAttack(*m_enemy[id][cn], pFrame, eFrame, m_attackRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame]);
-			m_enemy[id][cn]->Update(nowTime, m_maxFrame, m_hurtRect[enemyID], m_hurtRect[playerID], m_attackRect[enemyID], m_hurtActive[enemyID], m_attackActive[enemyID], m_mapData, *m_player);
+			if (m_enemy[id][cn]->GetState(CHARA_STATE::ACTION) != enemyDead) {
+				const int eAction = m_enemy[id][cn]->GetState(CHARA_STATE::ACTION);
+				const int eFrame = ReturnFrameNum(m_maxFrame[enemyID][eAction][0], *m_enemy[id][cn]);
+				
+				m_player->CollisionChara(m_hurtRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame], m_mapData, *m_enemy[id][cn]);
+				m_player->HandleAttack(*m_enemy[id][cn], pFrame, eFrame, m_attackRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame]);
+				m_enemy[id][cn]->Update(nowTime, m_maxFrame, m_hurtRect[enemyID], m_hurtRect[playerID], m_attackRect[enemyID], m_hurtActive[enemyID], m_attackActive[enemyID], m_mapData, *m_player);
+			}
 		}
 	}
-
 	return true;
 }
 

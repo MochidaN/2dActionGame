@@ -10,13 +10,12 @@ class Enemy : public Character {
 private:
 	//各アクションで実行する処理
 	void Punch(Player &player);
-	void Dive(Player &player);
 	void JumpOut(Player &player);
 	void Ramming(Player &player);
 	void KickFront(Player &player);
 	void KickBack(Player &player);
 	void HardPunch(Player &player);
-	void ComboPunch(Player &player);
+	void ComboPunch(Player &player, int myFrame);
 
 	//次の行動を選択
 	virtual void ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) = 0;
