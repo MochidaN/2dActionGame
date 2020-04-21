@@ -33,9 +33,6 @@
     <ClInclude Include="character.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="gameClass.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="enemy.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

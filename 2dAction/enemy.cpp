@@ -12,7 +12,7 @@ Enemy::Enemy(short hp, short power, short defense, SDL_Rect pos, short action, u
 
 void Enemy::Update(unsigned int nowTime, vector<vector<vector<int>>> maxFrame, vector<vector<vector<int>>> myHurtRect, vector<vector<vector<int>>> oppHurtRect, vector<vector<vector<int>>> myAtkRect, vector<unsigned int> myHurtActive, vector<unsigned int> myAtkActive, vector<vector<int>> mapData, Player &player) {
 	vector<int> mFrame = maxFrame[0][GetState(CHARA_STATE::ACTION)];
-	if (UpdateAnimation(nowTime, mFrame) == true) { ChangeAction(player, mFrame[0], myHurtActive, myAtkActive); }
+	if (UpdateAnimation(nowTime, mFrame) == true) { ChangeAction(player, mFrame[0], myHurtRect[static_cast<int>(GetState(CHARA_STATE::ACTION))][0/*myFrameNum*/], myHurtActive, myAtkActive); }
 	
 	int myFrameNum = ReturnFrameNum(maxFrame[0][static_cast<int>(GetState(CHARA_STATE::ACTION))][0], *this);
 	int oppFrameNum = ReturnFrameNum(maxFrame[1][static_cast<int>(player.GetState(CHARA_STATE::ACTION))][0], player);
@@ -135,7 +135,7 @@ void CalculateDamage(Player &player, short damage, short enemyPow) {
 			player.SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER::ACTION::FAINT));
 			playerTrunk = 0;
 		}
-		player.SetState(CHARA_STATE::HP, playerTrunk);
+		player.SetState(CHARA_STATE::TRUNK, playerTrunk);
 	}
 	else {
 		short playerHp = player.GetState(CHARA_STATE::HP);

@@ -1,15 +1,19 @@
 #include "stdafx.h"
-#include "gameClass.hpp"
+#include "parameter.hpp"
+#include "sequence.hpp"
 #include "enemy.hpp"
 #include "player.hpp"
 
 const short IMG_SIZE[static_cast<short>(CHARA_ID::NUM)] = { ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, PLAYER_SIZE };
 const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 0, 0, 0, 1, 1 };
 const short X = 0, Y = 1, W = 2, H = 3;
-//const short g_playerMoveX = 4;
-//const short g_playerStepX = 20;
-//const short g_yAdd = -28;
-//const short g_yAdd_ground = -1;
+
+//worldのサーフェイスにマップを描画
+void DrawWorld(SDL_Renderer *renderer, SDL_Surface *world, SDL_Surface *mapChip, vector<vector<int>> mapData);
+//アクション名を配列番号に変換
+template <typename T = ENEMY_ACTION> const int ActionToIndex(vector<T> actionList, int nowAction);
+//体力バー等の描画
+void DrawGauge(SDL_Renderer *renderer, SDL_Rect dst, int value, const char *color);
 
 Sequence::Sequence() {
 	m_next = SEQ_ID::NONE;
@@ -21,9 +25,7 @@ SEQ_ID Sequence::MoveTo() {
 
 Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, vector<vector<vector<int>>> maxFrame, vector<vector<unsigned int>> attackActive, vector<vector<vector<vector<int>>>> attackRect, vector<vector<unsigned int>> hurtActive, vector<vector<vector<vector<int>>>> hurtRect) {
 	m_joystick = SDL_JoystickOpen(0);//ジョイスティックを構造体に割り当てて有効化
-	if (!SDL_JoystickGetAttached(m_joystick)) {
-		cout << "failed to open joystick" << endl;
-	}
+	if (!SDL_JoystickGetAttached(m_joystick)) { cout << "failed to open joystick" << endl; }
 
 #ifdef NDEBUG
 	const char *mapImgPath = "../../image/map/mapchip.png";
@@ -95,7 +97,7 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, ve
 				break;
 			}
 			case static_cast<int>(CHARA_ID::BOSS) : {
-				m_enemy[id][cn] = new EnemyBoss(100, 10, 10, pos, action[id], time, g_yAdd_ground);
+				m_enemy[id][cn] = new EnemyBoss(1, 10, 10, pos, action[id], time, g_yAdd_ground);
 				break;
 			}
 			}
@@ -113,19 +115,13 @@ Game::~Game() {
 	SDL_DestroyTexture(m_world);
 	const int charaNum = static_cast<int>(CHARA_ID::NUM);
 	vector<short> actionNum;
-	for (int id = 0, end = m_enemyAction.size(); id < end; id++) {
-		actionNum.push_back(m_enemyAction[id].size());
-	}
+	for (int id = 0, end = m_enemyAction.size(); id < end; id++) { actionNum.push_back(m_enemyAction[id].size()); }
 	actionNum.push_back(static_cast<short>(ENEMY::ACTION::NUM));
 	actionNum.push_back(static_cast<short>(PLAYER::ACTION::NUM));
 
 	for (int id = 0; id < charaNum - 1; id++) {
-		for (int cn = 0; cn < actionNum[id]; cn++) {
-			SDL_DestroyTexture(m_characterTexture[id][cn]);
-		}
-		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
-			delete m_enemy[id][cn];
-		}
+		for (int cn = 0; cn < actionNum[id]; cn++) { SDL_DestroyTexture(m_characterTexture[id][cn]); }
+		for (int cn = 0; cn < CHARA_NUM[id]; cn++) { delete m_enemy[id][cn]; }
 		delete[] m_characterTexture[id];
 		delete[] m_enemy[id];
 	}
@@ -141,7 +137,7 @@ bool Game::Update(SDL_Renderer *renderer) {
 	else if (windowPosX + winWidth > WORLD_WIDTH * MAP_CHIPSIZE) { windowPosX = (WORLD_WIDTH - WINDOW_WIDTH) * MAP_CHIPSIZE; }
 
 	Draw(renderer, windowPosX);
-	
+	/*
 #ifdef _DEBUG
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 
@@ -200,7 +196,9 @@ bool Game::Update(SDL_Renderer *renderer) {
 		}
 	}
 #endif
+*/
 
+	if (m_enemy[3][0]->GetState(CHARA_STATE::ACTION) == static_cast<short>(ENEMY::ACTION::DEAD)) { m_next = SEQ_ID::GAME; return false; }
 	EVENT event = GetEvent(m_joystick);
 	switch (event) {
 	case EVENT::QUIT: {
@@ -254,16 +252,22 @@ void Game::Draw(SDL_Renderer *renderer, int windowPosX) {
 					SDL_RenderCopy(renderer, charaTexture[action], &srcChara, &dstRect);
 				}
 				else {//左
-					if (id == 2) { cout << action << endl; }
-
 					SDL_RenderCopyEx(renderer, charaTexture[action], &srcChara, &dstRect, 180, NULL, SDL_FLIP_VERTICAL);
 				}
 			};
 
+
 			if (id == playerID) {
+				SDL_Rect dst = {};
+				DrawGauge(renderer, dst, m_player->GetState(CHARA_STATE::HP), "green");
+				dst.y += 40;
+				DrawGauge(renderer, dst, m_player->GetState(CHARA_STATE::TRUNK), "yellow");
 				UpdateAnimation(m_characterTexture[id], *m_player,  m_maxFrame[1], m_enemyAction, m_hurtRect, m_mapData);
 			}
-			else {
+			else if (m_enemy[id][cn]->GetState(CHARA_STATE::ACTION) != static_cast<short>(ENEMY::ACTION::DEAD)) {
+				SDL_Rect dst = m_enemy[id][cn]->GetPos();
+				dst.x -= windowPosX;
+				DrawGauge(renderer, dst, m_enemy[id][cn]->GetState(CHARA_STATE::HP), "green");
 				UpdateAnimation(m_characterTexture[id], *m_enemy[id][cn], m_maxFrame[0], m_enemyAction, m_hurtRect, m_mapData);
 			}
 		}
@@ -379,17 +383,12 @@ void CreateText(SDL_Renderer *renderer, SDL_Texture *texture, const char *text, 
 		cout << "TTF_OpenFont:" << TTF_GetError() << endl;
 		exit(1);
 	}
-
 	SDL_Color fontColor = ConvertToRGB(color);
 	SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text, fontColor);
-	if (surface == NULL) {
-		OutputError("failed to create font surface");
-	}
+	if (surface == NULL) { OutputError("failed to create font surface"); }
 
 	texture = SDL_CreateTextureFromSurface(renderer, surface);
-	if (texture == NULL) {
-		OutputError("failed to create texture");
-	}
+	if (texture == NULL) { OutputError("failed to create texture"); }
 	SDL_FreeSurface(surface);
 	TTF_CloseFont(font);
 }
@@ -465,4 +464,15 @@ const int ActionToIndex( vector<T> actionList, int nowAction) {
 
 	cout << "that action is not exist." << endl;
 	return -1;
+}
+
+void DrawGauge(SDL_Renderer *renderer, SDL_Rect dst, int value, const char *color) {
+	dst.w = value * 4;
+	dst.h = 40;
+	SDL_Rect pos = dst;
+	SDL_Color c = ConvertToRGB(color);
+	SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
+	SDL_RenderFillRect(renderer, &pos);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_RenderDrawRect(renderer, &dst);
 }

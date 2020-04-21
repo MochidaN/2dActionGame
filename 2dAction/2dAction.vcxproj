@@ -149,7 +149,6 @@
   <ItemGroup>
     <ClInclude Include="character.hpp" />
     <ClInclude Include="enemy.hpp" />
-    <ClInclude Include="gameClass.hpp" />
     <ClInclude Include="mainLoop.hpp" />
     <ClInclude Include="parameter.hpp" />
     <ClInclude Include="player.hpp" />

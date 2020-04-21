@@ -18,7 +18,7 @@ private:
 	void ComboPunch(Player &player, int myFrame);
 
 	//次の行動を選択
-	virtual void ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) = 0;
+	virtual void ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRect, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) = 0;
 
 	//攻撃イベントの処理
 	void HandleAttack(Player &player, int myFrame, int oppFrame, vector<int> myAtkRect, vector<int> oppHurtRect);
@@ -35,23 +35,23 @@ public:
 class EnemyGuard : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
+	void ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRect, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
 };
 
 class EnemyWarp : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
+	void ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRect, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
 };
 
 class EnemyKick : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
+	void ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRect, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
 };
 
 class EnemyBoss : public Enemy {
 public:
 	using Enemy::Enemy;
-	void ChangeAction(Player player, int maxFrameHeng, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
+	void ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRect, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) override;
 };

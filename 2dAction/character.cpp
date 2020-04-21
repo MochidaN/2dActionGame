@@ -255,10 +255,10 @@ SDL_Rect MovePositionY(SDL_Rect nowPos, vector<int> hurtRect, short &yAdd, int w
 	else if (charaPos + hurtRect[H] > worldHeight * MAP_CHIPSIZE) {
 		nowPos.y = worldHeight * MAP_CHIPSIZE - (hurtRect[Y] + hurtRect[H]);
 	}
+
 	if (CollisionMapY(nowPos, nowPos.y, hurtRect, mapData)) {
 		yAdd = g_yAdd_ground;
 	}
-	
 	return nowPos;
 }
 
@@ -274,11 +274,7 @@ void CollisionMapX(SDL_Rect &nowPos, int prevX, vector<int> hurtRect, vector<vec
 	for (int w = left; w < right; w++) {
 		for (int h = top; h < bottom; h++) {
 			if (mapData[w][h] >= 1) {
-				//int x = max(nowPos.x, prevX);
-				//x /= MAP_CHIPSIZE;
-				//if (nowPos.x - prevX < 0) { x++; }
-				//x *= MAP_CHIPSIZE;
-				nowPos.x = prevX;//x;
+				nowPos.x = prevX;
 			}
 		}
 	}
@@ -292,7 +288,7 @@ bool CollisionMapY(SDL_Rect &nowPos, int prevY, vector<int> hurtRect, vector<vec
 	const short top = (nowPos.y + hurtRect[Y]) / MAP_CHIPSIZE;
 	short bottom = (nowPos.y + hurtRect[Y] + hurtRect[H] + MAP_CHIPSIZE - 1) / MAP_CHIPSIZE;
 	if (bottom > WORLD_HEIGHT) { bottom = WORLD_HEIGHT; }
-	cout << top << "  " << nowPos.y << "  " << hurtRect[Y] << endl<< endl;
+
 	for (int w = left; w < right; w++) {
 		for (int h = top; h < bottom; h++) {
 			if (mapData[w][h] >= 1) {

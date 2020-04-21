@@ -12,12 +12,11 @@ namespace ENEMY {
 
 //各シーケンスの値
 enum class SEQ_ID {
-	//TITLE,           //タイトル
-	//MODE_SELECT,     //モード選択
-	GAME,            //ゲーム画面
-
-	NONE, //無効値
-	QUIT  //終了
+	MODE_SELECT,   //モード選択
+	CONFIG,        //設定
+	GAME,          //ゲーム画面
+	NONE,          //無効値
+	QUIT           //終了
 };
 
 //シーケンス遷移の基底クラス

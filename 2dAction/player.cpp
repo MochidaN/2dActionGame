@@ -6,14 +6,13 @@
 const short X = 0, Y = 1, W = 2, H = 3;
 const short g_playerStepX = 20;
 const short g_yAdd = -28;
-const short g_trunkMax = 10;
+const short g_trunkMax = 50;
 
 void CalculateDamage(Enemy &enemy, short damage, short playerPow);
 
 
 Player::Player(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd) {
 	Character::InitState(g_right, hp, power, defense, pos, action, time, yAdd);
-
 	m_trunk = g_trunkMax;
 
 	m_cannotChangeAction = 0xffffffff;
@@ -36,8 +35,9 @@ void Player::Update(unsigned int nowTime, vector<vector<int>> maxFrame, vector<v
 }
 
 void Player::ChangeAction(vector<unsigned int> hurtActive, vector<unsigned int> atkActive) {
-	//if (++m_trunk > g_trunkMax) { m_trunk = g_trunkMax; }
+	if (++m_trunk > g_trunkMax) { m_trunk = g_trunkMax; }
 	PLAYER::ACTION action = static_cast<PLAYER::ACTION>(Character::GetState(CHARA_STATE::ACTION));
+
 	switch (action) {
 	case PLAYER::ACTION::WALK: { break; }
 	case PLAYER::ACTION::HIT_AIR: {
@@ -245,6 +245,7 @@ void CalculateDamage(Enemy &enemy, short damage, short playerPow) {
 	enemyHp -= (damage + (playerPow - enemy.GetState(CHARA_STATE::DEF)));
 	if (enemyHp <= 0) { 
 		enemy.SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::DOWN)); 
+		enemy.SetState(CHARA_STATE::HP, 0);
 		return; 
 	}
 
