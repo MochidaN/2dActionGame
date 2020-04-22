@@ -1,9 +1,11 @@
 #include "stdafx.h"
 #include "sequence.hpp"
+#include "gameClass.hpp"
+#include "gameEnding.hpp"
 #include "mainLoop.hpp"
 #include "character.hpp"
 #include "parameter.hpp"
-#include <bitset>
+#include "readFile.hpp"
 
 using namespace std;
 
@@ -13,21 +15,16 @@ MainLoop::MainLoop() {
 	Init();
 
 	m_window = SDL_CreateWindow("window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH * MAP_CHIPSIZE, WINDOW_HEIGHT * MAP_CHIPSIZE, SDL_WINDOW_OPENGL);
-	if (m_window == NULL) {
-		OutputError("failed to create window");
-	}
+	if (m_window == NULL) { OutputError("failed to create window"); }
+
 	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_SOFTWARE);
-	if (m_renderer == NULL) {
-		OutputError("failed to create renderer");
-	}
+	if (m_renderer == NULL) { OutputError("failed to create renderer"); }
 
 	//GUARD,WARP,KICK
 	vector<vector<ENEMY::ACTION>> action{ { ENEMY::ACTION::STAND, ENEMY::ACTION::WALK, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::GUARD, ENEMY::ACTION::PUNCH}, {ENEMY::ACTION::STAND, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::DIVE, ENEMY::ACTION::JUMP_OUT}, { ENEMY::ACTION::STAND, ENEMY::ACTION::WALK, ENEMY::ACTION::HIT, ENEMY::ACTION::DOWN, ENEMY::ACTION::DEAD, ENEMY::ACTION::RAMMING, ENEMY::ACTION::KICK_FRONT, ENEMY::ACTION::KICK_BACK} };
 	const short actionSize = action.size();
 	m_enemyAction.resize(actionSize);
-	for (int i = 0; i < actionSize; i++) {
-		m_enemyAction[i] = action[i];
-	}
+	for (int i = 0; i < actionSize; i++) { m_enemyAction[i] = action[i]; }
 
 #ifdef _DEBUG
 	vector<string> filePath{ "../txt/guard/", "../txt/warp/", "../txt/kick/", "../txt/boss/", "../txt/player/" };
@@ -88,13 +85,13 @@ MainLoop::MainLoop() {
 		m_attackRect.push_back(setRect(attackRectPath));
 	}
 	
-	CreateText(m_renderer, m_loadingText, u8"Loading...", 100, "white");
+	m_loadingText = new Font(m_renderer, u8"Loading...", 100, "white");
 	m_sequence = new Game(m_renderer, m_enemyAction, m_maxFrame, m_attackActive, m_attackRect, m_hurtActive, m_hurtRect);
 }
 
 MainLoop::~MainLoop() {
 	delete m_sequence;
-	SDL_DestroyTexture(m_loadingText);
+	delete m_loadingText;
 	SDL_DestroyRenderer(m_renderer);
 	SDL_DestroyWindow(m_window);
 	TTF_Quit();
@@ -103,24 +100,30 @@ MainLoop::~MainLoop() {
 
 bool MainLoop::Update() {
 	SEQ_ID next = SEQ_ID::NONE;
-	if (!m_sequence->Update(m_renderer)) {		
-		next = m_sequence->MoveTo();
-	}
-
+	if (!m_sequence->Update(m_renderer)) { next = m_sequence->MoveTo(); }
 	SDL_RenderPresent(m_renderer);//•`‰æ‚ð”½‰f
 
 	//‘JˆÚ”»’è
 	switch (next) {
-	case SEQ_ID::GAME:
+	case SEQ_ID::GAME: {
 		delete m_sequence;
 		Loading();
 		m_sequence = new Game(m_renderer, m_enemyAction, m_maxFrame, m_attackActive, m_attackRect, m_hurtActive, m_hurtRect);
 		break;
-	case SEQ_ID::QUIT: //I—¹
+	}
+	case SEQ_ID::GAME_CLEAR: {
+		m_sequence = new GameEnding(m_renderer, u8"CLEAR");
+		break;
+	}
+	case SEQ_ID::GAME_OVER: {
+		m_sequence = new GameEnding(m_renderer, u8"GAME OVER");
+		break;
+	}
+	case SEQ_ID::QUIT: { //I—¹
 		return false;
 		break;
-	default:
-		break;
+	}
+	default:{ break; }
 	}
 	return true;
 }
@@ -131,18 +134,15 @@ void MainLoop::Loading() {
 	SDL_RenderFillRect(m_renderer, NULL);
 
 	int w, h;
-	SDL_QueryTexture(m_loadingText, NULL, NULL, &w, &h);
-	SDL_Rect dst_rect = { WINDOW_WIDTH - w, WINDOW_HEIGHT - h, w, h };
-	SDL_RenderCopy(m_renderer, m_loadingText, NULL, &dst_rect);
-
+	m_loadingText->QueryTexture(w, h);
+	SDL_Rect dstRect = { WINDOW_WIDTH * MAP_CHIPSIZE - w, WINDOW_HEIGHT * MAP_CHIPSIZE - h, w, h };
+	SDL_RenderCopy(m_renderer, m_loadingText->ReturnTexture(), NULL, &dstRect);
 	SDL_RenderPresent(m_renderer);
 	SDL_Delay(1000);
 }
 
 void Init() {
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
-		OutputError("unable to initialize SDL");
-	}
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) { OutputError("unable to initialize SDL"); }
 
 	if (TTF_Init() < 0) {
 		cout << TTF_GetError() << endl;
@@ -156,6 +156,5 @@ void Init() {
 		cout << "could not init IMG:" << IMG_GetError() << endl;
 		exit(1);
 	}
-
 	SDL_JoystickEventState(SDL_ENABLE);//ƒCƒxƒ“ƒg‚ðŽæ“¾‰Â”\‚É‚·‚é
 }

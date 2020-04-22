@@ -1,11 +1,12 @@
 #include "stdafx.h"
 #include "parameter.hpp"
-#include "sequence.hpp"
+#include "gameClass.hpp"
 #include "enemy.hpp"
 #include "player.hpp"
+#include "readFile.hpp"
 
 const short IMG_SIZE[static_cast<short>(CHARA_ID::NUM)] = { ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, PLAYER_SIZE };
-const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 0, 0, 0, 1, 1 };
+const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 2, 1, 1, 1, 1 };
 const short X = 0, Y = 1, W = 2, H = 3;
 
 //worldのサーフェイスにマップを描画
@@ -77,27 +78,32 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, ve
 
 	const short enemyNum = static_cast<short>(CHARA_ID::NUM) - 1;
 	const short action[static_cast<short>(CHARA_ID::NUM)-1] = { static_cast<short>(ENEMY::ACTION::GUARD), static_cast<short>(ENEMY::ACTION::STAND),  static_cast<short>(ENEMY::ACTION::STAND),  static_cast<short>(ENEMY::ACTION::STAND)};
+	SDL_Rect pos[enemyNum][2] = {
+		{{ MAP_CHIPSIZE * 20, MAP_CHIPSIZE*8, ENEMY_SIZE, ENEMY_SIZE }, { MAP_CHIPSIZE * 40, MAP_CHIPSIZE * 8, ENEMY_SIZE, ENEMY_SIZE }},
+		{ { MAP_CHIPSIZE * 40, MAP_CHIPSIZE * 8, ENEMY_SIZE, ENEMY_SIZE }, {}},
+		{ { MAP_CHIPSIZE * 20, MAP_CHIPSIZE * 8, ENEMY_SIZE, ENEMY_SIZE }, {}},
+		{{ MAP_CHIPSIZE * 95, MAP_CHIPSIZE * 8, ENEMY_SIZE, ENEMY_SIZE }, {}} };
+
 	unsigned int time = SDL_GetTicks();
 	m_enemy = new Enemy**[enemyNum];
 	for (int id = 0; id < enemyNum; id++) {
 		m_enemy[id] = new Enemy*[CHARA_NUM[id]];
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
-			SDL_Rect pos = { 400, 0, IMG_SIZE[id], IMG_SIZE[id]};
 			switch (id) {
 			case static_cast<int>(CHARA_ID::GUARD) : {
-				m_enemy[id][cn] = new EnemyGuard(100, 10, 10, pos, action[id], time, g_yAdd_ground);
+				m_enemy[id][cn] = new EnemyGuard(60, 10, 10, pos[id][cn], action[id], time, g_yAdd_ground);
 				break;
 			}
 			case static_cast<int>(CHARA_ID::WARP) : {
-				m_enemy[id][cn] = new EnemyWarp(100, 10, 10, pos, action[id], time, g_yAdd_ground);
+				m_enemy[id][cn] = new EnemyWarp(60, 10, 10, pos[id][cn], action[id], time, g_yAdd_ground);
 				break;
 			}
 			case static_cast<int>(CHARA_ID::KICK) : {
-				m_enemy[id][cn] = new EnemyKick(100, 10, 10, pos, action[id], time, g_yAdd_ground);
+				m_enemy[id][cn] = new EnemyKick(60, 10, 10, pos[id][cn], action[id], time, g_yAdd_ground);
 				break;
 			}
 			case static_cast<int>(CHARA_ID::BOSS) : {
-				m_enemy[id][cn] = new EnemyBoss(1, 10, 10, pos, action[id], time, g_yAdd_ground);
+				m_enemy[id][cn] = new EnemyBoss(1, 10, 10, pos[id][cn], action[id], time, g_yAdd_ground);
 				break;
 			}
 			}
@@ -105,8 +111,8 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, ve
 	}
 	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
 	const short stand = static_cast<short>(PLAYER::ACTION::STAND);
-	SDL_Rect pos = { 0, WINDOW_HEIGHT * MAP_CHIPSIZE - (MAP_CHIPSIZE + m_hurtRect[1][stand][0][Y] + m_hurtRect[1][stand][0][H]), IMG_SIZE[playerID], IMG_SIZE[playerID] };
-	m_player = new Player(100, 10, 10, pos, static_cast<short>(PLAYER::ACTION::STAND), time, g_yAdd_ground);
+	SDL_Rect playerPos = { 0, WINDOW_HEIGHT * MAP_CHIPSIZE - (MAP_CHIPSIZE + m_hurtRect[1][stand][0][Y] + m_hurtRect[1][stand][0][H]), IMG_SIZE[playerID], IMG_SIZE[playerID] };
+	m_player = new Player(100, 10, 10, playerPos, static_cast<short>(PLAYER::ACTION::STAND), time, g_yAdd_ground);
 }
 
 Game::~Game() {
@@ -131,6 +137,15 @@ Game::~Game() {
 }
 
 bool Game::Update(SDL_Renderer *renderer) {
+	if (m_enemy[3][0]->GetState(CHARA_STATE::ACTION) == static_cast<short>(ENEMY::ACTION::DEAD)) {
+		m_next = SEQ_ID::GAME_CLEAR;
+		return false;
+	}
+	else if (m_player->GetState(CHARA_STATE::ACTION) == static_cast<short>(PLAYER::ACTION::DEAD)) { 
+		m_next = SEQ_ID::GAME_OVER; 
+		return false; 
+	}
+
 	const int winWidth = WINDOW_WIDTH * MAP_CHIPSIZE;
 	int windowPosX = (m_player->GetPos().x + m_hurtRect[1][static_cast<short>(PLAYER::ACTION::STAND)][0][X]) - (WINDOW_WIDTH * MAP_CHIPSIZE / 2);//描画領域の左端
 	if (windowPosX < 0) { windowPosX = 0; }
@@ -197,8 +212,6 @@ bool Game::Update(SDL_Renderer *renderer) {
 	}
 #endif
 */
-
-	if (m_enemy[3][0]->GetState(CHARA_STATE::ACTION) == static_cast<short>(ENEMY::ACTION::DEAD)) { m_next = SEQ_ID::GAME; return false; }
 	EVENT event = GetEvent(m_joystick);
 	switch (event) {
 	case EVENT::QUIT: {
@@ -296,6 +309,12 @@ EVENT GetEvent(SDL_Joystick *joystick) {
 			else if (SDL_JoystickGetButton(joystick, 10)) {//R1
 				return EVENT::JOY_R1;
 			}
+			else if (SDL_JoystickGetButton(joystick, 11)) {//上
+				return EVENT::JOY_HAT_UP;
+			}
+			else if (SDL_JoystickGetButton(joystick, 12)) {//下
+				return EVENT::JOY_HAT_DOWN;
+			}
 			else if (SDL_JoystickGetButton(joystick, 13)) {//左
 				return EVENT::JOY_HAT_LEFT;
 			}
@@ -307,34 +326,34 @@ EVENT GetEvent(SDL_Joystick *joystick) {
 			if ((int)event.jbutton.button == 9) {//L1
 				return EVENT::JOY_L1_UP;
 			}
-			else if ((int)event.jbutton.button == 13 || (int)event.jbutton.button == 14) {
+			else if (11 <= (int)event.jbutton.button && (int)event.jbutton.button <= 14) {
 				return EVENT::JOY_HAT_CENTERED;
 			}
 			break;
 		case SDL_JOYHATMOTION: {//十字キーが押されたとき
 			switch (SDL_JoystickGetHat(joystick, 0)) {
+			case SDL_HAT_UP:
+				return EVENT::JOY_HAT_UP;
+			case SDL_HAT_DOWN:
+				return EVENT::JOY_HAT_DOWN;
 			case SDL_HAT_RIGHT:
 				return EVENT::JOY_HAT_RIGHT;
-				break;
 			case SDL_HAT_LEFT:
 				return EVENT::JOY_HAT_LEFT;
-				break;
 			default:
 				return EVENT::JOY_HAT_CENTERED;
-				break;
 			}
 			break;
 		}
 		case SDL_QUIT: {//ウィンドウの×ボタン
 			return EVENT::QUIT;
-			break;
 		}
 		}
 	}
 	return EVENT::NONE;
 }
 
-inline void OutputError(const char* msg) {
+inline const void OutputError(const char* msg) {
 	cout << msg << ":" << SDL_GetError() << endl;  exit(1);
 }
 
@@ -367,71 +386,6 @@ SDL_Color ConvertToRGB(const char* color) {
 		cout << color << "is not ready or not exist." << endl;
 		exit(1);
 	}
-}
-
-void CreateText(SDL_Renderer *renderer, SDL_Texture *texture, const char *text, int size, const char *color) {
-#ifdef _DEBUG
-	const char* fontPath = "../font/ipaexg.ttf";
-#endif
-
-#ifdef NDEBUG
-	const char* fontPath = "../../font/ipaexg.ttf";
-#endif
-
-	TTF_Font *font = TTF_OpenFont(fontPath, size);
-	if (!font) {
-		cout << "TTF_OpenFont:" << TTF_GetError() << endl;
-		exit(1);
-	}
-	SDL_Color fontColor = ConvertToRGB(color);
-	SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text, fontColor);
-	if (surface == NULL) { OutputError("failed to create font surface"); }
-
-	texture = SDL_CreateTextureFromSurface(renderer, surface);
-	if (texture == NULL) { OutputError("failed to create texture"); }
-	SDL_FreeSurface(surface);
-	TTF_CloseFont(font);
-}
-
-vector<string> ReadFile(string fileName) {
-	std::ifstream ifs(fileName);
-	if (!ifs) {
-		cout << "failed to open file:" << fileName << endl;
-		exit(1);
-	}
-
-	vector<string> data;
-	std::string str;
-	while (getline(ifs, str)) {
-		data.push_back(str);
-	}
-
-	return data;
-}
-
-vector<int> split(string str, const char mark) {
-	stringstream ss{ str };
-	string buf;
-	vector<int> data;
-	while (getline(ss, buf, mark)) {
-		data.push_back(atoi(buf.c_str()));
-	}
-	return data;
-}
-
-vector<vector<int>> ReadFileSplit(string fileName, const char mark) {
-	ifstream ifs(fileName);
-	if (!ifs) {
-		cout << "failed to open file:" << fileName << endl;
-		exit(1);
-	}
-
-	string str;
-	vector<vector<int>> data;
-	while (getline(ifs, str)) {
-		data.push_back(split(str, mark));
-	}
-	return data;
 }
 
 void DrawWorld(SDL_Renderer *renderer, SDL_Surface *world, SDL_Surface *mapChip, vector<vector<int>> mapData) {

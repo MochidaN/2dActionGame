@@ -29,6 +29,18 @@ void EnemyGuard::ChangeAction(Player player, int maxFrameHeng, vector<int> hurtR
 			SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
 		}
 		else {
+			SDL_Rect pos = GetPos();
+			vector<int> fRect = FlipRect(hurtRect, pos.w);
+			if (GetState(CHARA_STATE::DIR) == g_right && player.GetPos().x < GetPos().x) {//‰EŒü‚«‚©‚ç¶Œü‚«‚É‚È‚é‚Æ‚«
+				pos.x -= (fRect[0] - hurtRect[0]);
+				SetState(CHARA_STATE::DIR, g_left);
+			}
+			else if (GetState(CHARA_STATE::DIR) == g_left && player.GetPos().x > GetPos().x) {
+				pos.x -= (hurtRect[0] - fRect[0]);
+				SetState(CHARA_STATE::DIR, g_right);
+			}
+			SetPos(pos);
+
 			const short nextAction = static_cast<short>(ENEMY::ACTION::WALK);
 			SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
 			xAdd = g_enemyMoveX;

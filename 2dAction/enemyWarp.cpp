@@ -16,8 +16,9 @@ void EnemyWarp::ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRe
 	case ENEMY::ACTION::DIVE: {
 		const short nextAction = static_cast<short>(ENEMY::ACTION::JUMP_OUT);
 		SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
-		int xAdd = g_enemyMoveX;
-		SetState(CHARA_STATE::X_ADD, xAdd);
+		if (player.GetPos().x <= GetPos().x) { SetState(CHARA_STATE::X_ADD, g_enemyMoveX); }
+		else { SetState(CHARA_STATE::X_ADD, -g_enemyMoveX); }
+
 		return;
 	}
 	}

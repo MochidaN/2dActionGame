@@ -1,7 +1,9 @@
 #pragma once
+#include "font.hpp"
+#include <vector>
 
 using namespace std;
-//#include "font.hpp"
+
 
 class Sequence;
 namespace ENEMY {
@@ -13,7 +15,7 @@ private:
 	SDL_Window *m_window;
 	SDL_Renderer *m_renderer;
 	Sequence *m_sequence;//シーケンス遷移用
-	SDL_Texture *m_loadingText;//ロード画面用文字
+	Font *m_loadingText;//ロード画面用文字
 	vector<vector<ENEMY::ACTION>> m_enemyAction;//各敵が持つアクション
 	vector<vector<vector<int>>> m_maxFrame;//各アニメーションのフレーム数
 	vector<vector<unsigned int>> m_attackActive;//攻撃判定のあるフレーム
