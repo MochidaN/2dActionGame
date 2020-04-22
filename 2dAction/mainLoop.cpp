@@ -2,6 +2,7 @@
 #include "sequence.hpp"
 #include "gameClass.hpp"
 #include "gameEnding.hpp"
+#include "menu.hpp"
 #include "mainLoop.hpp"
 #include "character.hpp"
 #include "parameter.hpp"
@@ -86,7 +87,8 @@ MainLoop::MainLoop() {
 	}
 	
 	m_loadingText = new Font(m_renderer, u8"Loading...", 100, "white");
-	m_sequence = new Game(m_renderer, m_enemyAction, m_maxFrame, m_attackActive, m_attackRect, m_hurtActive, m_hurtRect);
+	//m_sequence = new Game(m_renderer, m_enemyAction, m_maxFrame, m_attackActive, m_attackRect, m_hurtActive, m_hurtRect);
+	m_sequence = new Menu(m_renderer);
 }
 
 MainLoop::~MainLoop() {
@@ -105,6 +107,18 @@ bool MainLoop::Update() {
 
 	//ëJà⁄îªíË
 	switch (next) {
+	case SEQ_ID::MENU: {
+		delete m_sequence;
+		Loading();
+		m_sequence = new Menu(m_renderer);
+		break;
+	}
+	case SEQ_ID::CONFIG: {
+		delete m_sequence;
+		Loading();
+		//m_sequence = new Config(m_renderer);
+		break;
+	}
 	case SEQ_ID::GAME: {
 		delete m_sequence;
 		Loading();
@@ -112,16 +126,17 @@ bool MainLoop::Update() {
 		break;
 	}
 	case SEQ_ID::GAME_CLEAR: {
+		delete m_sequence;
 		m_sequence = new GameEnding(m_renderer, u8"CLEAR");
 		break;
 	}
 	case SEQ_ID::GAME_OVER: {
+		delete m_sequence;
 		m_sequence = new GameEnding(m_renderer, u8"GAME OVER");
 		break;
 	}
 	case SEQ_ID::QUIT: { //èIóπ
 		return false;
-		break;
 	}
 	default:{ break; }
 	}

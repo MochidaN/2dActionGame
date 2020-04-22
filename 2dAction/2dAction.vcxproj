@@ -153,6 +153,7 @@
     <ClInclude Include="gameClass.hpp" />
     <ClInclude Include="gameEnding.hpp" />
     <ClInclude Include="mainLoop.hpp" />
+    <ClInclude Include="menu.hpp" />
     <ClInclude Include="parameter.hpp" />
     <ClInclude Include="player.hpp" />
     <ClInclude Include="readFile.hpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="gameClass.cpp" />
     <ClCompile Include="gameEnding.cpp" />
     <ClCompile Include="mainLoop.cpp" />
+    <ClCompile Include="menu.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="readFile.cpp" />
     <ClCompile Include="stdafx.cpp">

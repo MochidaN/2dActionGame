@@ -11,7 +11,7 @@ namespace ENEMY {
 
 //各シーケンスの値
 enum class SEQ_ID {
-	MODE_SELECT,   //モード選択
+	MENU,          //モード選択
 	CONFIG,        //設定
 	GAME,          //ゲーム画面
 	GAME_CLEAR,    //ゲーム終了(遷移先選択画面)

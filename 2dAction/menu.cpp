@@ -1,28 +1,31 @@
 #include "stdafx.h"
 #include "parameter.hpp"
-#include "gameEnding.hpp"
+#include "menu.hpp"
 #include "font.hpp"
 #include <iostream>
 
 using namespace std;
 
 const int g_msgInterval = WINDOW_HEIGHT * MAP_CHIPSIZE / 5;
+const int g_msgNum = 3;
 
-GameEnding::GameEnding(SDL_Renderer *renderer, const char *resultMsg) {
+Menu::Menu(SDL_Renderer *renderer) {
 	m_joystick = SDL_JoystickOpen(0);//ジョイスティックを構造体に割り当てて有効化
 	if (!SDL_JoystickGetAttached(m_joystick)) { cout << "failed to open joystick" << endl; }
 
-	const int msgNum = 4;
-	Font *msg[msgNum];
-	msg[0] = new Font(renderer, resultMsg, 100, "red");
-	msg[1] = new Font(renderer, u8"メニューに戻る", 60, "black");
-	msg[2] = new Font(renderer, u8"もう一度遊ぶ", 60, "black");
-	msg[3] = new Font(renderer, u8"終了", 60, "black");
-	msg[1]->QueryTexture(m_cusorWidth, m_cursorHeight);
-	m_cursorX = WINDOW_WIDTH * MAP_CHIPSIZE / 2 - m_cusorWidth / 2;
-	m_cursorY = 2;
+	SDL_Color c = ConvertToRGB("white");
+	SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
+	SDL_RenderFillRect(renderer, NULL);
 
-	for (int i = 0; i < msgNum; i++) {
+	Font *msg[g_msgNum];
+	msg[0] = new Font(renderer, u8"ゲームスタート", 60, "black");
+	msg[1] = new Font(renderer, u8"設定", 60, "black");
+	msg[2] = new Font(renderer, u8"終了", 60, "black");
+	msg[0]->QueryTexture(m_cusorWidth, m_cursorHeight);
+	m_cursorX = WINDOW_WIDTH * MAP_CHIPSIZE / 2 - m_cusorWidth / 2;
+	m_cursorY = 1;
+
+	for (int i = 0; i < g_msgNum; i++) {
 		int w, h;
 		msg[i]->QueryTexture(w, h);
 		SDL_Rect dstRect = { WINDOW_WIDTH * MAP_CHIPSIZE / 2 - w / 2, WINDOW_HEIGHT * MAP_CHIPSIZE / 5 * (i + 1), w, h };
@@ -32,11 +35,11 @@ GameEnding::GameEnding(SDL_Renderer *renderer, const char *resultMsg) {
 	SDL_RenderPresent(renderer);
 }
 
-GameEnding::~GameEnding() {
+Menu::~Menu() {
 	if (SDL_JoystickGetAttached(m_joystick)) { SDL_JoystickClose(m_joystick); }
 }
 
-bool GameEnding::Update(SDL_Renderer *renderer) {
+bool Menu::Update(SDL_Renderer *renderer) {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_Rect dstClear = { m_cursorX, g_msgInterval * m_cursorY, m_cusorWidth, m_cursorHeight };
 	SDL_RenderDrawRect(renderer, &dstClear);
@@ -48,24 +51,24 @@ bool GameEnding::Update(SDL_Renderer *renderer) {
 		return false;
 	}
 	case EVENT::JOY_HAT_UP: {
-		if (--m_cursorY < 2) { m_cursorY = 4; }
+		if (--m_cursorY < 1) { m_cursorY = g_msgNum; }
 		break;
 	}
 	case EVENT::JOY_HAT_DOWN: {
-		if (++m_cursorY > 4) { m_cursorY = 2; }
+		if (++m_cursorY > g_msgNum) { m_cursorY = 1; }
 		break;
 	}
 	case EVENT::JOY_CIRCLE: {
 		switch (m_cursorY) {
-		case 2: {
-			m_next = SEQ_ID::MENU;
-			break;
-		}
-		case 3: {
+		case 1: {
 			m_next = SEQ_ID::GAME;
 			break;
 		}
-		case 4: {
+		case 2: {
+			m_next = SEQ_ID::CONFIG;
+			break;
+		}
+		case 3: {
 			m_next = SEQ_ID::QUIT;
 			break;
 		}
@@ -75,7 +78,7 @@ bool GameEnding::Update(SDL_Renderer *renderer) {
 	}
 
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-	SDL_Rect dstDraw = {m_cursorX, g_msgInterval * m_cursorY, m_cusorWidth, m_cursorHeight};
+	SDL_Rect dstDraw = { m_cursorX, g_msgInterval * m_cursorY, m_cusorWidth, m_cursorHeight };
 	SDL_RenderDrawRect(renderer, &dstDraw);
 	SDL_RenderPresent(renderer);
 	return true;
