@@ -1,11 +1,11 @@
 #pragma once
 #include "sequence.hpp"
+#include "getInput.hpp"
 #include <SDL.h>
-
 
 class Menu : public Sequence {
 private:
-	SDL_Joystick * m_joystick;
+	GetInput m_eventInput;
 	int m_cursorX, m_cursorY;
 	int m_cusorWidth;
 	int m_cursorHeight;

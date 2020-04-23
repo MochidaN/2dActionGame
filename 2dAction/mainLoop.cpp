@@ -3,6 +3,8 @@
 #include "gameClass.hpp"
 #include "gameEnding.hpp"
 #include "menu.hpp"
+//#include "config.hpp"
+#include "buttonSetting.hpp"
 #include "mainLoop.hpp"
 #include "character.hpp"
 #include "parameter.hpp"
@@ -113,10 +115,9 @@ bool MainLoop::Update() {
 		m_sequence = new Menu(m_renderer);
 		break;
 	}
-	case SEQ_ID::CONFIG: {
+	case SEQ_ID::BUTTON_SETTING: {
 		delete m_sequence;
-		Loading();
-		//m_sequence = new Config(m_renderer);
+		m_sequence = new ButtonSetting(m_renderer);
 		break;
 	}
 	case SEQ_ID::GAME: {
@@ -153,7 +154,7 @@ void MainLoop::Loading() {
 	SDL_Rect dstRect = { WINDOW_WIDTH * MAP_CHIPSIZE - w, WINDOW_HEIGHT * MAP_CHIPSIZE - h, w, h };
 	SDL_RenderCopy(m_renderer, m_loadingText->ReturnTexture(), NULL, &dstRect);
 	SDL_RenderPresent(m_renderer);
-	SDL_Delay(1000);
+	SDL_Delay(500);
 }
 
 void Init() {

@@ -1,17 +1,18 @@
 #pragma once
 #include "sequence.hpp"
-#include "getInput.hpp"
 #include <SDL.h>
 
-class GameEnding : public Sequence {
+class ButtonSetting : public Sequence {
 private:
-	GetInput m_eventInput;
+	SDL_Joystick *m_joystick;
 	int m_cursorX, m_cursorY;
 	int m_cusorWidth;
 	int m_cursorHeight;
+	vector<int> m_buttonValue;
+	string filePath;
 public:
-	GameEnding(SDL_Renderer *renderer, const char *resultMsg);
-	~GameEnding();
+	ButtonSetting(SDL_Renderer *renderer);
+	~ButtonSetting();
 
 	bool Update(SDL_Renderer *renderer);
 };

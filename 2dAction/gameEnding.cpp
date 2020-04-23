@@ -9,9 +9,6 @@ using namespace std;
 const int g_msgInterval = WINDOW_HEIGHT * MAP_CHIPSIZE / 5;
 
 GameEnding::GameEnding(SDL_Renderer *renderer, const char *resultMsg) {
-	m_joystick = SDL_JoystickOpen(0);//ジョイスティックを構造体に割り当てて有効化
-	if (!SDL_JoystickGetAttached(m_joystick)) { cout << "failed to open joystick" << endl; }
-
 	const int msgNum = 4;
 	Font *msg[msgNum];
 	msg[0] = new Font(renderer, resultMsg, 100, "red");
@@ -32,16 +29,14 @@ GameEnding::GameEnding(SDL_Renderer *renderer, const char *resultMsg) {
 	SDL_RenderPresent(renderer);
 }
 
-GameEnding::~GameEnding() {
-	if (SDL_JoystickGetAttached(m_joystick)) { SDL_JoystickClose(m_joystick); }
-}
+GameEnding::~GameEnding() {}
 
 bool GameEnding::Update(SDL_Renderer *renderer) {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_Rect dstClear = { m_cursorX, g_msgInterval * m_cursorY, m_cusorWidth, m_cursorHeight };
 	SDL_RenderDrawRect(renderer, &dstClear);
 
-	EVENT event = GetEvent(m_joystick);
+	EVENT event = m_eventInput.GetEvent();
 	switch (event) {
 	case EVENT::QUIT: {
 		m_next = SEQ_ID::QUIT;

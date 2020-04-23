@@ -2,6 +2,7 @@
 #include "parameter.hpp"
 #include "player.hpp"
 #include "enemy.hpp"
+#include "getinput.hpp"
 
 const short X = 0, Y = 1, W = 2, H = 3;
 const short g_playerStepX = 20;

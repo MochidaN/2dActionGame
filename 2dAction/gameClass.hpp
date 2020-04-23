@@ -1,5 +1,6 @@
 #pragma once
 #include "sequence.hpp"
+#include "getInput.hpp"
 #include <SDL.h>
 #include <vector>
 
@@ -10,7 +11,7 @@ class Enemy;
 
 class Game : public Sequence {
 private:
-	SDL_Joystick *m_joystick;
+	GetInput m_eventInput;
 	SDL_Texture *m_world;
 	vector<vector<int>> m_mapData;
 	SDL_Texture ***m_characterTexture;

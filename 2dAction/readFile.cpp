@@ -16,7 +16,6 @@ vector<string> ReadFile(string fileName) {
 	while (getline(ifs, str)) {
 		data.push_back(str);
 	}
-
 	return data;
 }
 

@@ -15,6 +15,8 @@ void DrawWorld(SDL_Renderer *renderer, SDL_Surface *world, SDL_Surface *mapChip,
 template <typename T = ENEMY_ACTION> const int ActionToIndex(vector<T> actionList, int nowAction);
 //体力バー等の描画
 void DrawGauge(SDL_Renderer *renderer, SDL_Rect dst, int value, const char *color);
+//各キャラクタのアニメーション更新
+void UpdateAnimation(SDL_Renderer *renderer, SDL_Texture **charaTexture, int id, Character &my, vector<vector<ENEMY::ACTION>> m_enemyAction, int windowPosX);
 
 Sequence::Sequence() {
 	m_next = SEQ_ID::NONE;
@@ -25,8 +27,6 @@ SEQ_ID Sequence::MoveTo() {
 }
 
 Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, vector<vector<vector<int>>> maxFrame, vector<vector<unsigned int>> attackActive, vector<vector<vector<vector<int>>>> attackRect, vector<vector<unsigned int>> hurtActive, vector<vector<vector<vector<int>>>> hurtRect) {
-	m_joystick = SDL_JoystickOpen(0);//ジョイスティックを構造体に割り当てて有効化
-	if (!SDL_JoystickGetAttached(m_joystick)) { cout << "failed to open joystick" << endl; }
 
 #ifdef NDEBUG
 	const char *mapImgPath = "../../image/map/mapchip.png";
@@ -116,8 +116,6 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, ve
 }
 
 Game::~Game() {
-	if (SDL_JoystickGetAttached(m_joystick)) { SDL_JoystickClose(m_joystick); }
-
 	SDL_DestroyTexture(m_world);
 	const int charaNum = static_cast<int>(CHARA_ID::NUM);
 	vector<short> actionNum;
@@ -212,7 +210,7 @@ bool Game::Update(SDL_Renderer *renderer) {
 	}
 #endif
 */
-	EVENT event = GetEvent(m_joystick);
+	EVENT event = m_eventInput.GetEvent();
 	switch (event) {
 	case EVENT::QUIT: {
 		m_next = SEQ_ID::QUIT;
@@ -253,104 +251,22 @@ void Game::Draw(SDL_Renderer *renderer, int windowPosX) {
 	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
 	for (int id = 0; id < charaNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
-			auto UpdateAnimation = [renderer, id, windowPosX](SDL_Texture **charaTexture, Character &my, vector<vector<int>> maxFrame, vector<vector<ENEMY::ACTION>> m_enemyAction, vector<vector<vector<vector<int>>>> hurtRect, vector<vector<int>> m_mapData) {
-				SDL_Rect srcChara = { my.GetState(CHARA_STATE::FRAME_H) * IMG_SIZE[id], my.GetState(CHARA_STATE::FRAME_V) * IMG_SIZE[id], IMG_SIZE[id], IMG_SIZE[id] };
-				SDL_Rect dstRect = my.GetPos();
-				dstRect.x -= windowPosX;
-
-				short action = my.GetState(CHARA_STATE::ACTION);
-				if (id < static_cast<int>(CHARA_ID::BOSS)) { action = ActionToIndex(m_enemyAction[id], action); }
-
-				if (my.GetState(CHARA_STATE::DIR) == g_right) {//右向き
-					SDL_RenderCopy(renderer, charaTexture[action], &srcChara, &dstRect);
-				}
-				else {//左
-					SDL_RenderCopyEx(renderer, charaTexture[action], &srcChara, &dstRect, 180, NULL, SDL_FLIP_VERTICAL);
-				}
-			};
-
-
 			if (id == playerID) {
 				SDL_Rect dst = {};
 				DrawGauge(renderer, dst, m_player->GetState(CHARA_STATE::HP), "green");
 				dst.y += 40;
 				DrawGauge(renderer, dst, m_player->GetState(CHARA_STATE::TRUNK), "yellow");
-				UpdateAnimation(m_characterTexture[id], *m_player,  m_maxFrame[1], m_enemyAction, m_hurtRect, m_mapData);
+				UpdateAnimation(renderer, m_characterTexture[id], id, *m_player, m_enemyAction, windowPosX);
 			}
 			else if (m_enemy[id][cn]->GetState(CHARA_STATE::ACTION) != static_cast<short>(ENEMY::ACTION::DEAD)) {
 				SDL_Rect dst = m_enemy[id][cn]->GetPos();
 				dst.x -= windowPosX;
 				DrawGauge(renderer, dst, m_enemy[id][cn]->GetState(CHARA_STATE::HP), "green");
-				UpdateAnimation(m_characterTexture[id], *m_enemy[id][cn], m_maxFrame[0], m_enemyAction, m_hurtRect, m_mapData);
+				UpdateAnimation(renderer, m_characterTexture[id], id, *m_enemy[id][cn], m_enemyAction, windowPosX);
 			}
 		}
 	}
 
-}
-
-EVENT GetEvent(SDL_Joystick *joystick) {
-	if (!SDL_JoystickGetAttached(joystick)) {//まだ開いてないとき
-		joystick = SDL_JoystickOpen(0);
-	}
-
-	SDL_Event event;
-	if (SDL_PollEvent(&event)) {//キューにイベントがあったとき
-		switch (event.type) {
-		case SDL_JOYBUTTONDOWN:
-			if (SDL_JoystickGetButton(joystick, 1)) {//〇ボタン
-				return EVENT::JOY_CIRCLE;
-			}
-			else if (SDL_JoystickGetButton(joystick, 0)) {//×ボタン
-				return EVENT::JOY_CROSS;
-			}
-			else if (SDL_JoystickGetButton(joystick, 9)) {//L1
-				return EVENT::JOY_L1_DOWN;
-			}
-			else if (SDL_JoystickGetButton(joystick, 10)) {//R1
-				return EVENT::JOY_R1;
-			}
-			else if (SDL_JoystickGetButton(joystick, 11)) {//上
-				return EVENT::JOY_HAT_UP;
-			}
-			else if (SDL_JoystickGetButton(joystick, 12)) {//下
-				return EVENT::JOY_HAT_DOWN;
-			}
-			else if (SDL_JoystickGetButton(joystick, 13)) {//左
-				return EVENT::JOY_HAT_LEFT;
-			}
-			else if (SDL_JoystickGetButton(joystick, 14)) {//右
-				return EVENT::JOY_HAT_RIGHT;
-			}
-			break;
-		case SDL_JOYBUTTONUP:
-			if ((int)event.jbutton.button == 9) {//L1
-				return EVENT::JOY_L1_UP;
-			}
-			else if (11 <= (int)event.jbutton.button && (int)event.jbutton.button <= 14) {
-				return EVENT::JOY_HAT_CENTERED;
-			}
-			break;
-		case SDL_JOYHATMOTION: {//十字キーが押されたとき
-			switch (SDL_JoystickGetHat(joystick, 0)) {
-			case SDL_HAT_UP:
-				return EVENT::JOY_HAT_UP;
-			case SDL_HAT_DOWN:
-				return EVENT::JOY_HAT_DOWN;
-			case SDL_HAT_RIGHT:
-				return EVENT::JOY_HAT_RIGHT;
-			case SDL_HAT_LEFT:
-				return EVENT::JOY_HAT_LEFT;
-			default:
-				return EVENT::JOY_HAT_CENTERED;
-			}
-			break;
-		}
-		case SDL_QUIT: {//ウィンドウの×ボタン
-			return EVENT::QUIT;
-		}
-		}
-	}
-	return EVENT::NONE;
 }
 
 inline const void OutputError(const char* msg) {
@@ -430,3 +346,19 @@ void DrawGauge(SDL_Renderer *renderer, SDL_Rect dst, int value, const char *colo
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderDrawRect(renderer, &dst);
 }
+
+void UpdateAnimation(SDL_Renderer *renderer, SDL_Texture **charaTexture, int id, Character &my, vector<vector<ENEMY::ACTION>> m_enemyAction, int windowPosX) {
+	SDL_Rect srcChara = { my.GetState(CHARA_STATE::FRAME_H) * IMG_SIZE[id], my.GetState(CHARA_STATE::FRAME_V) * IMG_SIZE[id], IMG_SIZE[id], IMG_SIZE[id] };
+	SDL_Rect dstRect = my.GetPos();
+	dstRect.x -= windowPosX;
+
+	short action = my.GetState(CHARA_STATE::ACTION);
+	if (id < static_cast<int>(CHARA_ID::BOSS)) { action = ActionToIndex(m_enemyAction[id], action); }
+
+	if (my.GetState(CHARA_STATE::DIR) == g_right) {//右向き
+		SDL_RenderCopy(renderer, charaTexture[action], &srcChara, &dstRect);
+	}
+	else {//左
+		SDL_RenderCopyEx(renderer, charaTexture[action], &srcChara, &dstRect, 180, NULL, SDL_FLIP_VERTICAL);
+	}
+};

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "parameter.hpp"
-#include "menu.hpp"
+#include "config.hpp"
 #include "font.hpp"
 #include <iostream>
 
@@ -9,15 +9,15 @@ using namespace std;
 const int g_msgInterval = WINDOW_HEIGHT * MAP_CHIPSIZE / 5;
 const int g_msgNum = 3;
 
-Menu::Menu(SDL_Renderer *renderer) {
+Config::Config(SDL_Renderer *renderer) {
 	SDL_Color c = ConvertToRGB("white");
 	SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
 	SDL_RenderFillRect(renderer, NULL);
 
 	Font *msg[g_msgNum];
-	msg[0] = new Font(renderer, u8"ゲームスタート", 60, "black");
-	msg[1] = new Font(renderer, u8"設定", 60, "black");
-	msg[2] = new Font(renderer, u8"終了", 60, "black");
+	msg[0] = new Font(renderer, u8"パラメータ変更", 60, "black");
+	msg[1] = new Font(renderer, u8"ボタン設定", 60, "black");
+	msg[2] = new Font(renderer, u8"戻る", 60, "black");
 	msg[0]->QueryTexture(m_cusorWidth, m_cursorHeight);
 	m_cursorX = WINDOW_WIDTH * MAP_CHIPSIZE / 2 - m_cusorWidth / 2;
 	m_cursorY = 1;
@@ -32,9 +32,9 @@ Menu::Menu(SDL_Renderer *renderer) {
 	SDL_RenderPresent(renderer);
 }
 
-Menu::~Menu() {}
+Config::~Config() {}
 
-bool Menu::Update(SDL_Renderer *renderer) {
+bool Config::Update(SDL_Renderer *renderer) {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_Rect dstClear = { m_cursorX, g_msgInterval * m_cursorY, m_cusorWidth, m_cursorHeight };
 	SDL_RenderDrawRect(renderer, &dstClear);
@@ -56,15 +56,15 @@ bool Menu::Update(SDL_Renderer *renderer) {
 	case EVENT::JOY_CIRCLE: {
 		switch (m_cursorY) {
 		case 1: {
-			m_next = SEQ_ID::GAME;
+			//m_next = SEQ_ID::GAME;
 			break;
 		}
 		case 2: {
-			m_next = SEQ_ID::BUTTON_SETTING;
+			//m_next = SEQ_ID::CONFIG;
 			break;
 		}
 		case 3: {
-			m_next = SEQ_ID::QUIT;
+			m_next = SEQ_ID::MENU;
 			break;
 		}
 		}

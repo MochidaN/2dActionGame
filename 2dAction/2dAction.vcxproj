@@ -147,11 +147,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="buttonSetting.hpp" />
     <ClInclude Include="character.hpp" />
+    <ClInclude Include="config.hpp" />
     <ClInclude Include="enemy.hpp" />
     <ClInclude Include="font.hpp" />
     <ClInclude Include="gameClass.hpp" />
     <ClInclude Include="gameEnding.hpp" />
+    <ClInclude Include="getInput.hpp" />
     <ClInclude Include="mainLoop.hpp" />
     <ClInclude Include="menu.hpp" />
     <ClInclude Include="parameter.hpp" />
@@ -163,7 +166,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="2dAction.cpp" />
+    <ClCompile Include="buttonSetting.cpp" />
     <ClCompile Include="character.cpp" />
+    <ClCompile Include="config.cpp" />
     <ClCompile Include="enemy.cpp" />
     <ClCompile Include="enemyBoss.cpp" />
     <ClCompile Include="enemyGuard.cpp" />
@@ -172,6 +177,7 @@
     <ClCompile Include="font.cpp" />
     <ClCompile Include="gameClass.cpp" />
     <ClCompile Include="gameEnding.cpp" />
+    <ClCompile Include="getInput.cpp" />
     <ClCompile Include="mainLoop.cpp" />
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="player.cpp" />
