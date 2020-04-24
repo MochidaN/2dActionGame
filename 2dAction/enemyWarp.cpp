@@ -16,8 +16,8 @@ void EnemyWarp::ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRe
 	case ENEMY::ACTION::DIVE: {
 		const short nextAction = static_cast<short>(ENEMY::ACTION::JUMP_OUT);
 		SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
-		if (player.GetPos().x <= GetPos().x) { SetState(CHARA_STATE::X_ADD, g_enemyMoveX); }
-		else { SetState(CHARA_STATE::X_ADD, -g_enemyMoveX); }
+		if (player.GetPos().x <= GetPos().x) { SetState(CHARA_STATE::X_ADD, g_enemyMoveX * 2); }
+		else { SetState(CHARA_STATE::X_ADD, -g_enemyMoveX * 2); }
 
 		return;
 	}
@@ -27,7 +27,7 @@ void EnemyWarp::ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRe
 	uniform_int_distribution<int> dist(1, 10);
 	const int r = dist(mt);
 	short xAdd = 0;
-	if (1 <= r && r <= 4) {
+	if (1 <= r && r <= 5) {
 		const short nextAction = static_cast<short>(ENEMY::ACTION::DIVE);
 		SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
 	}

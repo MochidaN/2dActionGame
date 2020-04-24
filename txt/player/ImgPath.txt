@@ -11,7 +11,9 @@
 ../../image/player/fainting.png
 ../../image/player/down.png
 ../../image/player/dead.png
+../../image/player/just_guard.png
 ../../image/player/guard.png
 ../../image/player/parry.png
 ../../image/player/side_attack.png
 ../../image/player/vertical_attack.png
+../../image/player/rigid.png

@@ -16,7 +16,7 @@ Menu::Menu(SDL_Renderer *renderer) {
 
 	Font *msg[g_msgNum];
 	msg[0] = new Font(renderer, u8"ゲームスタート", 60, "black");
-	msg[1] = new Font(renderer, u8"設定", 60, "black");
+	msg[1] = new Font(renderer, u8"ボタン設定", 60, "black");
 	msg[2] = new Font(renderer, u8"終了", 60, "black");
 	msg[0]->QueryTexture(m_cusorWidth, m_cursorHeight);
 	m_cursorX = WINDOW_WIDTH * MAP_CHIPSIZE / 2 - m_cusorWidth / 2;

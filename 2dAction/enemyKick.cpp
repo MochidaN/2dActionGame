@@ -11,6 +11,14 @@ void EnemyKick::ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRe
 		return;
 	}
 	case ENEMY::ACTION::DEAD: { return; }
+	case ENEMY::ACTION::RAMMING: 
+	case ENEMY::ACTION::KICK_BACK:
+	case ENEMY::ACTION::KICK_FRONT:{
+		const short nextAction = static_cast<short>(ENEMY::ACTION::STAND);
+		SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
+		SetState(CHARA_STATE::X_ADD, 0);
+		return;
+	}
 	}
 
 	mt19937 mt{ std::random_device{}() };
@@ -52,7 +60,7 @@ void EnemyKick::ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRe
 
 			const short nextAction = static_cast<short>(ENEMY::ACTION::RAMMING);
 			SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
-			xAdd = g_enemyMoveX * 2;
+			xAdd = g_enemyMoveX * 5;
 		}
 	}
 	SetState(CHARA_STATE::X_ADD, xAdd);

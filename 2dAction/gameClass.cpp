@@ -6,7 +6,7 @@
 #include "readFile.hpp"
 
 const short IMG_SIZE[static_cast<short>(CHARA_ID::NUM)] = { ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE, PLAYER_SIZE };
-const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 2, 1, 1, 1, 1 };
+const short CHARA_NUM[static_cast<short>(CHARA_ID::NUM)] = { 2, 2, 2, 1, 1 };
 const short X = 0, Y = 1, W = 2, H = 3;
 
 //worldのサーフェイスにマップを描画
@@ -77,12 +77,9 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, ve
 	m_hurtRect = hurtRect;
 
 	const short enemyNum = static_cast<short>(CHARA_ID::NUM) - 1;
-	const short action[static_cast<short>(CHARA_ID::NUM)-1] = { static_cast<short>(ENEMY::ACTION::GUARD), static_cast<short>(ENEMY::ACTION::STAND),  static_cast<short>(ENEMY::ACTION::STAND),  static_cast<short>(ENEMY::ACTION::STAND)};
-	SDL_Rect pos[enemyNum][2] = {
-		{{ MAP_CHIPSIZE * 20, MAP_CHIPSIZE*8, ENEMY_SIZE, ENEMY_SIZE }, { MAP_CHIPSIZE * 40, MAP_CHIPSIZE * 8, ENEMY_SIZE, ENEMY_SIZE }},
-		{ { MAP_CHIPSIZE * 40, MAP_CHIPSIZE * 8, ENEMY_SIZE, ENEMY_SIZE }, {}},
-		{ { MAP_CHIPSIZE * 20, MAP_CHIPSIZE * 8, ENEMY_SIZE, ENEMY_SIZE }, {}},
-		{{ MAP_CHIPSIZE * 95, MAP_CHIPSIZE * 8, ENEMY_SIZE, ENEMY_SIZE }, {}} };
+	SDL_Rect pos[2][2] = {
+		{{ MAP_CHIPSIZE * 20, MAP_CHIPSIZE*8, ENEMY_SIZE, ENEMY_SIZE }, { MAP_CHIPSIZE * 45, MAP_CHIPSIZE * 8, ENEMY_SIZE, ENEMY_SIZE }},
+		{{ MAP_CHIPSIZE * (WORLD_WIDTH - 2), MAP_CHIPSIZE * 8, ENEMY_SIZE, ENEMY_SIZE }, {}} };
 
 	unsigned int time = SDL_GetTicks();
 	m_enemy = new Enemy**[enemyNum];
@@ -91,19 +88,19 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, ve
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
 			switch (id) {
 			case static_cast<int>(CHARA_ID::GUARD) : {
-				m_enemy[id][cn] = new EnemyGuard(60, 10, 10, pos[id][cn], action[id], time, g_yAdd_ground);
+				m_enemy[id][cn] = new EnemyGuard(60, 5, 20, pos[0][cn], 0, time, g_yAdd_ground);
 				break;
 			}
 			case static_cast<int>(CHARA_ID::WARP) : {
-				m_enemy[id][cn] = new EnemyWarp(60, 10, 10, pos[id][cn], action[id], time, g_yAdd_ground);
+				m_enemy[id][cn] = new EnemyWarp(60, 5, 5, pos[0][cn], 0, time, g_yAdd_ground);
 				break;
 			}
 			case static_cast<int>(CHARA_ID::KICK) : {
-				m_enemy[id][cn] = new EnemyKick(60, 10, 10, pos[id][cn], action[id], time, g_yAdd_ground);
+				m_enemy[id][cn] = new EnemyKick(60, 10, 5, pos[0][cn], 0, time, g_yAdd_ground);
 				break;
 			}
 			case static_cast<int>(CHARA_ID::BOSS) : {
-				m_enemy[id][cn] = new EnemyBoss(1, 10, 10, pos[id][cn], action[id], time, g_yAdd_ground);
+				m_enemy[id][cn] = new EnemyBoss(100, 20, 15, pos[1][cn], 0, time, g_yAdd_ground);
 				break;
 			}
 			}
@@ -112,7 +109,7 @@ Game::Game(SDL_Renderer *renderer, vector<vector<ENEMY::ACTION>> enemyAction, ve
 	const short playerID = static_cast<short>(CHARA_ID::PLAYER);
 	const short stand = static_cast<short>(PLAYER::ACTION::STAND);
 	SDL_Rect playerPos = { 0, WINDOW_HEIGHT * MAP_CHIPSIZE - (MAP_CHIPSIZE + m_hurtRect[1][stand][0][Y] + m_hurtRect[1][stand][0][H]), IMG_SIZE[playerID], IMG_SIZE[playerID] };
-	m_player = new Player(100, 10, 10, playerPos, static_cast<short>(PLAYER::ACTION::STAND), time, g_yAdd_ground);
+	m_player = new Player(100, 15, 15, playerPos, static_cast<short>(PLAYER::ACTION::STAND), time, g_yAdd_ground);
 }
 
 Game::~Game() {
@@ -150,7 +147,7 @@ bool Game::Update(SDL_Renderer *renderer) {
 	else if (windowPosX + winWidth > WORLD_WIDTH * MAP_CHIPSIZE) { windowPosX = (WORLD_WIDTH - WINDOW_WIDTH) * MAP_CHIPSIZE; }
 
 	Draw(renderer, windowPosX);
-	/*
+	
 #ifdef _DEBUG
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 
@@ -209,7 +206,7 @@ bool Game::Update(SDL_Renderer *renderer) {
 		}
 	}
 #endif
-*/
+
 	EVENT event = m_eventInput.GetEvent();
 	switch (event) {
 	case EVENT::QUIT: {
@@ -227,16 +224,19 @@ bool Game::Update(SDL_Renderer *renderer) {
 	const int pAction = m_player->GetState(CHARA_STATE::ACTION);
 	const int pFrame = ReturnFrameNum(m_maxFrame[playerID][pAction][0], *m_player);
 	const short enemyDead = static_cast<short>(ENEMY::ACTION::DEAD);
-	
+
 	for (int id = 0; id < charaNum; id++) {
 		for (int cn = 0; cn < CHARA_NUM[id]; cn++) {
-			if (m_enemy[id][cn]->GetState(CHARA_STATE::ACTION) != enemyDead) {
-				const int eAction = m_enemy[id][cn]->GetState(CHARA_STATE::ACTION);
-				const int eFrame = ReturnFrameNum(m_maxFrame[enemyID][eAction][0], *m_enemy[id][cn]);
-				
-				m_player->CollisionChara(m_hurtRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame], m_mapData, *m_enemy[id][cn]);
-				m_player->HandleAttack(*m_enemy[id][cn], pFrame, eFrame, m_attackRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame]);
-				m_enemy[id][cn]->Update(nowTime, m_maxFrame, m_hurtRect[enemyID], m_hurtRect[playerID], m_attackRect[enemyID], m_hurtActive[enemyID], m_attackActive[enemyID], m_mapData, *m_player);
+			SDL_Rect enemyPos = m_enemy[id][cn]->GetPos();
+			if ((windowPosX <= enemyPos.x + enemyPos.w) && (windowPosX + winWidth >= enemyPos.x)) {//ウィンドウ内にいる
+				if (m_enemy[id][cn]->GetState(CHARA_STATE::ACTION) != enemyDead) {
+					const int eAction = m_enemy[id][cn]->GetState(CHARA_STATE::ACTION);
+					const int eFrame = ReturnFrameNum(m_maxFrame[enemyID][eAction][0], *m_enemy[id][cn]);
+
+					m_player->CollisionChara(m_hurtRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame], m_mapData, *m_enemy[id][cn]);
+					m_player->HandleAttack(*m_enemy[id][cn], pFrame, eFrame, m_attackRect[playerID][pAction][pFrame], m_hurtRect[enemyID][eAction][eFrame]);
+					m_enemy[id][cn]->Update(nowTime, m_maxFrame, m_hurtRect[enemyID], m_hurtRect[playerID], m_attackRect[enemyID], m_hurtActive[enemyID], m_attackActive[enemyID], m_mapData, *m_player);
+				}
 			}
 		}
 	}

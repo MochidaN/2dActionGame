@@ -6,9 +6,6 @@
 void CloseAction(int randNum, EnemyBoss &chara, vector<unsigned int> hurtActive, vector<unsigned int> atkActive);
 
 void EnemyBoss::ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRect, vector<unsigned int> hurtActive, vector<unsigned int> atkActive) {
-	////////////////////////////////////////////////
-	SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::DEAD));
-	////////////////////////////////////////////////
 	switch (static_cast<ENEMY::ACTION>(GetState(CHARA_STATE::ACTION))) {
 	case ENEMY::ACTION::DOWN: {
 		const short nextAction = static_cast<short>(ENEMY::ACTION::DEAD);
@@ -25,6 +22,16 @@ void EnemyBoss::ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRe
 		SetState(CHARA_STATE::X_ADD, xAdd);
 		return;
 	}
+	case ENEMY::ACTION::HARD_PUNCH:
+	case ENEMY::ACTION::COMBO_PUNCH:
+	case ENEMY::ACTION::RAMMING:
+	case ENEMY::ACTION::KICK_BACK:
+	case ENEMY::ACTION::KICK_FRONT: {
+		const short nextAction = static_cast<short>(ENEMY::ACTION::STAND);
+		SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
+		SetState(CHARA_STATE::X_ADD, 0);
+		return;
+	}	
 	}
 
 	mt19937 mt{ std::random_device{}() };
@@ -46,19 +53,18 @@ void EnemyBoss::ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRe
 			}
 			SetPos(pos);
 			
-
 			CloseAction(r, *this, hurtActive, atkActive);
 		}
 		else {//ÉvÉåÉCÉÑÇ™çUåÇÇµÇƒÇ´ÇΩÇ∆Ç´
-			if (1 <= r && r <= 60) {
+			if (1 <= r && r <= 80) {
 				const short nextAction = static_cast<short>(ENEMY::ACTION::GUARD);
 				SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
+				SetState(CHARA_STATE::X_ADD, 0);
 			}
 			else {
 				CloseAction(r, *this, hurtActive, atkActive);
 			}
 		}
-		SetState(CHARA_STATE::X_ADD, 0);
 	}
 	else {
 		short xAdd = 0;
@@ -67,9 +73,9 @@ void EnemyBoss::ChangeAction(Player player, int maxFrameHeng, vector<int> hurtRe
 			SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
 		}
 		else if(26 <= r && r <= 50) {
-			//const short nextAction = static_cast<short>(ENEMY::ACTION::RAMMING);
-			//SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
-			//xAdd = g_enemyMoveX * 2;
+			const short nextAction = static_cast<short>(ENEMY::ACTION::RAMMING);
+			SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
+			xAdd = g_enemyMoveX * 2;
 		}
 		else if (51 <= r && r <= 80) {
 			const short nextAction = static_cast<short>(ENEMY::ACTION::WALK);

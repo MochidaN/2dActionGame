@@ -17,13 +17,13 @@ void EnemyGuard::ChangeAction(Player player, int maxFrameHeng, vector<int> hurtR
 	uniform_int_distribution<int> dist(1, 10);
 	const int r = dist(mt);
 	short xAdd = 0;
-	if (1 <= r && r <= 6) {
+	if (1 <= r && r <= 8) {
 		const short nextAction = static_cast<short>(ENEMY::ACTION::GUARD);
 		SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
 	}
 	else {
 		float distance = CalculateSquaredDistance(GetPos(), player.GetPos());
-		const float attackRange = 100;
+		const float attackRange = 200;
 		if (distance < attackRange * attackRange) {
 			const short nextAction = static_cast<short>(ENEMY::ACTION::PUNCH);
 			SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);

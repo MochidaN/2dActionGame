@@ -31,8 +31,8 @@ ButtonSetting::ButtonSetting(SDL_Renderer *renderer) {
 	Font *msg[g_msgNum];
 	int i = 0;
 	msg[i++] = new Font(renderer, u8"各キーに対応するボタンを押してください", 30, "red");
-	msg[i++] = new Font(renderer, u8"〇", 30, "black");
-	msg[i++] = new Font(renderer, u8"X", 30, "black");
+	msg[i++] = new Font(renderer, u8"〇ボタン", 30, "black");
+	msg[i++] = new Font(renderer, u8"Xボタン", 30, "black");
 	msg[i++] = new Font(renderer, u8"R１", 30, "black");
 	msg[i++] = new Font(renderer, u8"L１", 30, "black");
 	msg[i++] = new Font(renderer, u8"方向キー↓", 30, "black");

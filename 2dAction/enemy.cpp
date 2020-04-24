@@ -12,7 +12,7 @@ Enemy::Enemy(short hp, short power, short defense, SDL_Rect pos, short action, u
 
 void Enemy::Update(unsigned int nowTime, vector<vector<vector<int>>> maxFrame, vector<vector<vector<int>>> myHurtRect, vector<vector<vector<int>>> oppHurtRect, vector<vector<vector<int>>> myAtkRect, vector<unsigned int> myHurtActive, vector<unsigned int> myAtkActive, vector<vector<int>> mapData, Player &player) {
 	vector<int> mFrame = maxFrame[0][GetState(CHARA_STATE::ACTION)];
-	if (UpdateAnimation(nowTime, mFrame) == true) { ChangeAction(player, mFrame[0], myHurtRect[static_cast<int>(GetState(CHARA_STATE::ACTION))][0/*myFrameNum*/], myHurtActive, myAtkActive); }
+	if (UpdateAnimation(nowTime, mFrame) == true) { ChangeAction(player, mFrame[0], myHurtRect[static_cast<int>(GetState(CHARA_STATE::ACTION))][0], myHurtActive, myAtkActive); }
 	
 	int myFrameNum = ReturnFrameNum(maxFrame[0][static_cast<int>(GetState(CHARA_STATE::ACTION))][0], *this);
 	int oppFrameNum = ReturnFrameNum(maxFrame[1][static_cast<int>(player.GetState(CHARA_STATE::ACTION))][0], player);
@@ -127,20 +127,31 @@ void Enemy::ComboPunch(Player &player, int myFrame) {
 
 //各攻撃のダメージ計算と、相手の行動をHitに変更する
 void CalculateDamage(Player &player, short damage, short enemyPow) {
-	if (player.GetState(CHARA_STATE::ACTION) == static_cast<short>(PLAYER::ACTION::GUARD)) {//ガードされた
+	short const playerAction = player.GetState(CHARA_STATE::ACTION);
+	if (playerAction == static_cast<short>(PLAYER::ACTION::GUARD)) {//ガードされた
 		short playerTrunk = player.GetState(CHARA_STATE::TRUNK);
 
-		playerTrunk -= (damage + (enemyPow - player.GetState(CHARA_STATE::DEF)));
+		playerTrunk -= (damage + enemyPow / 2);
 		if (playerTrunk < 0) {
 			player.SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER::ACTION::FAINT));
 			playerTrunk = 0;
 		}
 		player.SetState(CHARA_STATE::TRUNK, playerTrunk);
 	}
+	else if (playerAction == static_cast<short>(PLAYER::ACTION::JUST_GUARD)) {
+		player.EnabledParry();
+	}
 	else {
 		short playerHp = player.GetState(CHARA_STATE::HP);
-		playerHp -= (damage + (enemyPow - player.GetState(CHARA_STATE::DEF)));
-		if (playerHp < 0) { player.SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER::ACTION::DOWN)); }
+		int d = (damage + (enemyPow - player.GetState(CHARA_STATE::DEF)));
+		if (d <= 0) { d = 1; }
+		playerHp -= d;
+		if (playerHp < 0) { 
+			player.SetState(CHARA_STATE::ACTION, static_cast<short>(PLAYER::ACTION::DOWN));
+			playerHp = 0;
+			player.SetState(CHARA_STATE::HP, playerHp);
+			return;
+		}
 		player.SetState(CHARA_STATE::HP, playerHp);
 
 		if (player.GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground || player.GetState(CHARA_STATE::Y_ADD) == 0) {
@@ -151,13 +162,3 @@ void CalculateDamage(Player &player, short damage, short enemyPow) {
 		}
 	}
 }
-
-/*
-const short Enemy::GetState(CHARA_STATE request) {
-return Character::GetState(request);
-}
-
-void Enemy::SetState(CHARA_STATE request, int state) {
-Character::SetState(request, state);
-}
-*/

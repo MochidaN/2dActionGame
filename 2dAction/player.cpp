@@ -5,7 +5,7 @@
 #include "getinput.hpp"
 
 const short X = 0, Y = 1, W = 2, H = 3;
-const short g_playerStepX = 20;
+const short g_playerStepX = 10;
 const short g_yAdd = -28;
 const short g_trunkMax = 50;
 
@@ -38,7 +38,6 @@ void Player::Update(unsigned int nowTime, vector<vector<int>> maxFrame, vector<v
 void Player::ChangeAction(vector<unsigned int> hurtActive, vector<unsigned int> atkActive) {
 	if (++m_trunk > g_trunkMax) { m_trunk = g_trunkMax; }
 	PLAYER::ACTION action = static_cast<PLAYER::ACTION>(Character::GetState(CHARA_STATE::ACTION));
-
 	switch (action) {
 	case PLAYER::ACTION::WALK: { break; }
 	case PLAYER::ACTION::HIT_AIR: {
@@ -81,6 +80,23 @@ void Player::ChangeAction(vector<unsigned int> hurtActive, vector<unsigned int> 
 	case PLAYER::ACTION::GUARD: {
 		break;
 	}
+	case PLAYER::ACTION::SIDE_ATTACK: {
+		const short nextAction = static_cast<short>(PLAYER::ACTION::RIGID);
+		SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
+		break;
+	}
+	case PLAYER::ACTION::JUST_GUARD: {
+		if (m_enabledParry == true) {
+			m_enabledParry = false;
+			const short nextAction = static_cast<short>(PLAYER::ACTION::PARRY);
+			SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
+		}
+		else {
+			const short nextAction = static_cast<short>(PLAYER::ACTION::GUARD);
+			SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
+		}
+		break;
+	}
 	default: {
 		const short nextAction = static_cast<short>(PLAYER::ACTION::STAND);
 		SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
@@ -111,7 +127,7 @@ void Player::HandleEvent(bool endAnimation, EVENT event, vector<int> hurtRect, v
 		}
 		case EVENT::JOY_L1_DOWN: {
 			if (GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground || GetState(CHARA_STATE::Y_ADD) == 0) {
-				const short nextAction = static_cast<short>(PLAYER::ACTION::GUARD);
+				const short nextAction = static_cast<short>(PLAYER::ACTION::JUST_GUARD);
 				SetAction(*this, nextAction, hurtActive[nextAction], atkActive[nextAction]);
 				SetState(CHARA_STATE::X_ADD, 0);
 			}
@@ -140,7 +156,8 @@ void Player::HandleEvent(bool endAnimation, EVENT event, vector<int> hurtRect, v
 			break;
 		}
 		case EVENT::JOY_HAT_LEFT: {
-			if (GetState(CHARA_STATE::ACTION) == static_cast<short>(PLAYER::ACTION::VERTICAL_ATTACK)) { break; }
+			const short action = GetState(CHARA_STATE::ACTION);
+			if (action == static_cast<short>(PLAYER::ACTION::VERTICAL_ATTACK) || action == static_cast<short>(PLAYER::ACTION::WALK)) { break; }
 
 			short nextAction = static_cast<short>(PLAYER::ACTION::WALK);
 			if (GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground || GetState(CHARA_STATE::Y_ADD) == 0) {
@@ -161,7 +178,8 @@ void Player::HandleEvent(bool endAnimation, EVENT event, vector<int> hurtRect, v
 			break;
 		}
 		case EVENT::JOY_HAT_RIGHT: {
-			if (GetState(CHARA_STATE::ACTION) == static_cast<short>(PLAYER::ACTION::VERTICAL_ATTACK)) { break; }
+			const short action = GetState(CHARA_STATE::ACTION);
+			if (action == static_cast<short>(PLAYER::ACTION::VERTICAL_ATTACK) || action == static_cast<short>(PLAYER::ACTION::WALK)) { break; }
 
 			short nextAction = static_cast<short>(PLAYER::ACTION::WALK);
 			if (GetState(CHARA_STATE::Y_ADD) == g_yAdd_ground || GetState(CHARA_STATE::Y_ADD) == 0) {
@@ -239,19 +257,8 @@ void Player::VerticalAttack(Enemy &enemy) {
 	SetActiveBit(CHARA_STATE::ATTACK_ACTIVE, 0);
 }
 
-//各攻撃のダメージ計算と、相手の行動をHitに変更する
-void CalculateDamage(Enemy &enemy, short damage, short playerPow) {
-	short enemyHp = enemy.GetState(CHARA_STATE::HP);
-
-	enemyHp -= (damage + (playerPow - enemy.GetState(CHARA_STATE::DEF)));
-	if (enemyHp <= 0) { 
-		enemy.SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::DOWN)); 
-		enemy.SetState(CHARA_STATE::HP, 0);
-		return; 
-	}
-
-	enemy.SetState(CHARA_STATE::HP, enemyHp);
-	enemy.SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::HIT));
+void Player::EnabledParry() {
+	m_enabledParry = true;
 }
 
 const short Player::GetState(CHARA_STATE request) {
@@ -265,4 +272,20 @@ void Player::SetState(CHARA_STATE request, short state) {
 		return;
 	}
 	Character::SetState(request, state);
+}
+
+//各攻撃のダメージ計算と、相手の行動をHitに変更する
+void CalculateDamage(Enemy &enemy, short damage, short playerPow) {
+	short enemyHp = enemy.GetState(CHARA_STATE::HP);
+	int d = (damage + (playerPow - enemy.GetState(CHARA_STATE::DEF)));
+	if (d <= 0) { d = 1; }
+	enemyHp -= d;
+	if (enemyHp <= 0) {
+		enemy.SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::DOWN));
+		enemy.SetState(CHARA_STATE::HP, 0);
+		return;
+	}
+
+	enemy.SetState(CHARA_STATE::HP, enemyHp);
+	enemy.SetState(CHARA_STATE::ACTION, static_cast<short>(ENEMY::ACTION::HIT));
 }

@@ -11,7 +11,9 @@
 ../../txt/player/hurtRect/fainting.txt
 ../../txt/player/hurtRect/down.txt
 ../../txt/player/hurtRect/dead.txt
+../../txt/player/hurtRect/just_guard.txt
 ../../txt/player/hurtRect/guard.txt
 ../../txt/player/hurtRect/parry.txt
 ../../txt/player/hurtRect/side_attack.txt
 ../../txt/player/hurtRect/vertical_attack.txt
+../../txt/player/hurtRect/rigid.txt

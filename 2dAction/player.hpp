@@ -10,6 +10,7 @@ enum class EVENT;
 class Player : public Character {
 private:
 	int m_trunk;//ガード耐久値
+	bool m_enabledParry;//パリー状態に派生するかどうか
 	unsigned int m_cannotChangeAction;//実行中キャンセルできないアクションを示すビット列
 
 	//各アクションで実行する処理
@@ -30,6 +31,9 @@ public:
 
 	//攻撃イベントの処理
 	void HandleAttack(Enemy &enemy, int myFrame, int oppFrame, vector<int> myAtkRect, vector<int> oppHurtRect);
+
+	//パリーの有効化
+	void EnabledParry();
 
 	const short GetState(CHARA_STATE request) override;
 	void SetState(CHARA_STATE request, short state) override;

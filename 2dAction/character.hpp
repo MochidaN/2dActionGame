@@ -6,7 +6,7 @@ using namespace std;
 
 const short g_right = 1;
 const short g_left = -1;
-const short g_addX = 4;
+const short g_addX = 2;
 
 enum class CHARA_ID {
 	GUARD,
@@ -67,10 +67,12 @@ namespace PLAYER {
 		FAINTING,
 		DOWN,
 		DEAD,
+		JUST_GUARD,
 		GUARD,
 		PARRY,
 		SIDE_ATTACK,
 		VERTICAL_ATTACK,
+		RIGID,
 		NUM
 	};
 }

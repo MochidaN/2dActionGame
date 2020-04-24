@@ -11,7 +11,9 @@
 -1//fainting.png
 -1//down.png
 -1//dead.png
+-1//just_guard.png
 -1//guard.png
 3 4 5//parry.png
 3 4 5//side_attack.png
 3 4//vertical_attack.png
+-1//rigid.txt

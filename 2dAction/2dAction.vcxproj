@@ -149,7 +149,6 @@
   <ItemGroup>
     <ClInclude Include="buttonSetting.hpp" />
     <ClInclude Include="character.hpp" />
-    <ClInclude Include="config.hpp" />
     <ClInclude Include="enemy.hpp" />
     <ClInclude Include="font.hpp" />
     <ClInclude Include="gameClass.hpp" />
@@ -168,7 +167,6 @@
     <ClCompile Include="2dAction.cpp" />
     <ClCompile Include="buttonSetting.cpp" />
     <ClCompile Include="character.cpp" />
-    <ClCompile Include="config.cpp" />
     <ClCompile Include="enemy.cpp" />
     <ClCompile Include="enemyBoss.cpp" />
     <ClCompile Include="enemyGuard.cpp" />
@@ -215,6 +213,25 @@
     <Image Include="..\image\guard\punch.png" />
     <Image Include="..\image\guard\walk.png" />
     <Image Include="..\image\map\mapchip.png" />
+    <Image Include="..\image\player\dead.png" />
+    <Image Include="..\image\player\down.png" />
+    <Image Include="..\image\player\faint.png" />
+    <Image Include="..\image\player\fainting.png" />
+    <Image Include="..\image\player\fall.png" />
+    <Image Include="..\image\player\fall_hit.png" />
+    <Image Include="..\image\player\guard.png" />
+    <Image Include="..\image\player\hit.png" />
+    <Image Include="..\image\player\hit_air.png" />
+    <Image Include="..\image\player\jump.png" />
+    <Image Include="..\image\player\just_guard.png" />
+    <Image Include="..\image\player\landing.png" />
+    <Image Include="..\image\player\parry.png" />
+    <Image Include="..\image\player\rigid.png" />
+    <Image Include="..\image\player\side_attack.png" />
+    <Image Include="..\image\player\stand.png" />
+    <Image Include="..\image\player\step.png" />
+    <Image Include="..\image\player\vertical_attack.png" />
+    <Image Include="..\image\player\walk.png" />
     <Image Include="..\image\throw\dead.png" />
     <Image Include="..\image\throw\down.png" />
     <Image Include="..\image\throw\hit.png" />
@@ -307,8 +324,10 @@
     <Text Include="..\txt\player\attackRect\hit.txt" />
     <Text Include="..\txt\player\attackRect\hit_air.txt" />
     <Text Include="..\txt\player\attackRect\jump.txt" />
+    <Text Include="..\txt\player\attackRect\just_guard.txt" />
     <Text Include="..\txt\player\attackRect\landing.txt" />
     <Text Include="..\txt\player\attackRect\parry.txt" />
+    <Text Include="..\txt\player\attackRect\rigid.txt" />
     <Text Include="..\txt\player\attackRect\side_attack.txt" />
     <Text Include="..\txt\player\attackRect\stand.txt" />
     <Text Include="..\txt\player\attackRect\step.txt" />
@@ -327,8 +346,10 @@
     <Text Include="..\txt\player\hurtRect\hurtRectPath.txt" />
     <Text Include="..\txt\player\hurtRect\hurtRectPath_debug.txt" />
     <Text Include="..\txt\player\hurtRect\jump.txt" />
+    <Text Include="..\txt\player\hurtRect\just_guard.txt" />
     <Text Include="..\txt\player\hurtRect\landing.txt" />
     <Text Include="..\txt\player\hurtRect\parry.txt" />
+    <Text Include="..\txt\player\hurtRect\rigid.txt" />
     <Text Include="..\txt\player\hurtRect\side_attack.txt" />
     <Text Include="..\txt\player\hurtRect\stand.txt" />
     <Text Include="..\txt\player\hurtRect\step.txt" />

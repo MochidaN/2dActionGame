@@ -11,7 +11,9 @@
 ../../txt/player/attackRect/fainting.txt
 ../../txt/player/attackRect/down.txt
 ../../txt/player/attackRect/dead.txt
+../../txt/player/attackRect/just_guard.txt
 ../../txt/player/attackRect/guard.txt
 ../../txt/player/attackRect/parry.txt
 ../../txt/player/attackRect/side_attack.txt
 ../../txt/player/attackRect/vertical_attack.txt
+../../txt/player/attackRect/rigid.txt

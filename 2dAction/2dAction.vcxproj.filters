@@ -54,9 +54,6 @@
     <ClInclude Include="menu.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="config.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="getInput.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -108,9 +105,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="menu.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="config.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="getInput.cpp">
@@ -275,6 +269,63 @@
     <Image Include="..\image\map\mapchip.png">
       <Filter>リソース ファイル</Filter>
     </Image>
+    <Image Include="..\image\player\dead.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\down.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\faint.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\fainting.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\fall.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\fall_hit.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\guard.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\hit.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\hit_air.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\jump.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\just_guard.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\landing.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\parry.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\rigid.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\side_attack.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\stand.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\step.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\vertical_attack.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="..\image\player\walk.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\txt\player\ImgPath.txt" />
@@ -375,5 +426,9 @@
     <Text Include="..\txt\enemy_hurtRect\down.txt" />
     <Text Include="..\txt\enemy_hurtRect\hit.txt" />
     <Text Include="..\txt\enemy_attackRect\attackActive.txt" />
+    <Text Include="..\txt\player\hurtRect\just_guard.txt" />
+    <Text Include="..\txt\player\hurtRect\rigid.txt" />
+    <Text Include="..\txt\player\attackRect\just_guard.txt" />
+    <Text Include="..\txt\player\attackRect\rigid.txt" />
   </ItemGroup>
 </Project>

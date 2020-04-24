@@ -16,7 +16,7 @@ const short g_hatLeft = 7;
 
 GetInput::GetInput() {
 	m_joystick = SDL_JoystickOpen(0);//ジョイスティックを構造体に割り当てて有効化
-	if (!SDL_JoystickGetAttached(m_joystick)) { cout << "failed to open joystick" << endl; }
+	if (!SDL_JoystickGetAttached(m_joystick)) {}//cout << "failed to open joystick" << endl; }
 
 #ifdef _DEBUG
 	string filePath("../txt/joyevent/input.txt");
@@ -75,10 +75,8 @@ EVENT GetInput::GetEvent() {
 			}
 			break;
 		case SDL_JOYHATMOTION: {//十字キーが押されたとき
-			cout << "joy" << endl;
 			switch (SDL_JoystickGetHat(m_joystick, 0)) {
 			case SDL_HAT_UP:
-				cout << "up" << endl;
 				return EVENT::JOY_HAT_UP;
 			case SDL_HAT_DOWN:
 				return EVENT::JOY_HAT_DOWN;
@@ -88,6 +86,51 @@ EVENT GetInput::GetEvent() {
 				return EVENT::JOY_HAT_LEFT;
 			default:
 				return EVENT::JOY_HAT_CENTERED;
+			}
+			break;
+		}
+		case SDL_KEYDOWN: {
+			switch (event.key.keysym.sym) {
+			case SDLK_DOWN: {
+				return EVENT::JOY_HAT_DOWN;
+			}
+			case SDLK_UP: {
+				return EVENT::JOY_HAT_UP;
+			}
+			case SDLK_RIGHT: {
+				return EVENT::JOY_HAT_RIGHT;
+			}
+			case SDLK_LEFT: {
+				return EVENT::JOY_HAT_LEFT;
+			}
+			case SDLK_KP_ENTER:
+			case SDLK_RETURN:
+			case SDLK_s: {
+				return EVENT::JOY_CIRCLE;
+			}
+			case SDLK_z: {
+				return EVENT::JOY_CROSS;
+			}
+			case SDLK_w: {
+				return EVENT::JOY_L1_DOWN;
+			}
+			case SDLK_a: {
+				return EVENT::JOY_R1;
+			}
+			}
+			break;
+		}
+		case SDL_KEYUP: {
+			switch (event.key.keysym.sym) {
+			case SDLK_DOWN: 
+			case SDLK_UP:
+			case SDLK_RIGHT:
+			case SDLK_LEFT:{
+				return EVENT::JOY_HAT_CENTERED;
+			}
+			case SDLK_w: {
+				return EVENT::JOY_L1_UP;
+			}
 			}
 			break;
 		}

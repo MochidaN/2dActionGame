@@ -4,7 +4,7 @@
 
 using namespace std;
 class Player;
-const short g_enemyMoveX = 4;
+const short g_enemyMoveX = 2;
 
 class Enemy : public Character {
 private:
@@ -26,9 +26,6 @@ public:
 	Enemy(short hp, short power, short defense, SDL_Rect pos, short action, unsigned int time, short yAdd);
 
 	void Update(unsigned int nowTime, vector<vector<vector<int>>> maxFrame, vector<vector<vector<int>>> myHurtRect, vector<vector<vector<int>>> oppHurtRect, vector<vector<vector<int>>> myAtkRect, vector<unsigned int> myHurtActive, vector<unsigned int> myAtkActive, vector<vector<int>> mapData, Player &player);
-
-	//const short GetState(CHARA_STATE request) override;
-	//void SetState(CHARA_STATE request, int state) override;
 };
 
 

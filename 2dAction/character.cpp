@@ -4,7 +4,7 @@
 #include <algorithm>
 
 using namespace std;
-const short ANIME_INTERVAL = 1000 / 10;//アニメーション間隔
+const short ANIME_INTERVAL = 1000 / 30;//アニメーション間隔
 const short X = 0, Y = 1, W = 2, H = 3;
 
 Character::Character() {}
