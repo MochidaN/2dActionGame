@@ -117,6 +117,32 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="..\image\map\map.csv" />
+    <None Include="..\Win32\Release\2dAction.exe" />
+    <None Include="..\Win32\Release\2dAction.iobj" />
+    <None Include="..\Win32\Release\2dAction.ipdb" />
+    <None Include="..\Win32\Release\2dAction.pdb" />
+    <None Include="..\Win32\Release\libfreetype-6.dll" />
+    <None Include="..\Win32\Release\libjpeg-9.dll" />
+    <None Include="..\Win32\Release\libpng16-16.dll" />
+    <None Include="..\Win32\Release\libtiff-5.dll" />
+    <None Include="..\Win32\Release\libwebp-7.dll" />
+    <None Include="..\Win32\Release\SDL2.dll" />
+    <None Include="..\Win32\Release\SDL2_image.dll" />
+    <None Include="..\Win32\Release\SDL2_ttf.dll" />
+    <None Include="..\Win32\Release\zlib1.dll" />
+    <None Include="..\x64\Release\2dAction.exe" />
+    <None Include="..\x64\Release\2dAction.iobj" />
+    <None Include="..\x64\Release\2dAction.ipdb" />
+    <None Include="..\x64\Release\2dAction.pdb" />
+    <None Include="..\x64\Release\libfreetype-6.dll" />
+    <None Include="..\x64\Release\libjpeg-9.dll" />
+    <None Include="..\x64\Release\libpng16-16.dll" />
+    <None Include="..\x64\Release\libtiff-5.dll" />
+    <None Include="..\x64\Release\libwebp-7.dll" />
+    <None Include="..\x64\Release\SDL2.dll" />
+    <None Include="..\x64\Release\SDL2_image.dll" />
+    <None Include="..\x64\Release\SDL2_ttf.dll" />
+    <None Include="..\x64\Release\zlib1.dll" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\player\down.png">
@@ -430,5 +456,6 @@
     <Text Include="..\txt\player\hurtRect\rigid.txt" />
     <Text Include="..\txt\player\attackRect\just_guard.txt" />
     <Text Include="..\txt\player\attackRect\rigid.txt" />
+    <Text Include="..\Readme.txt" />
   </ItemGroup>
 </Project>
